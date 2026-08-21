@@ -1,0 +1,36 @@
+# Agno framework for building multi-modal AI agents
+agno
+
+# Google Gemini API client for generative AI capabilities
+google-genai
+
+# FastAPI web framework for building REST APIs
+fastapi
+
+# ASGI server for running FastAPI applications
+uvicorn
+
+# Multipart form data parsing (required for file uploads in FastAPI)
+python-multipart
+
+# Image processing and manipulation library
+pillow
+
+# Data validation and settings management using Python type hints
+pydantic
+
+# Gradio UI framework for building interactive ML demos and web apps
+gradio
+
+# Loads environment variables from a .env file
+python-dotenv
+
+# HTTP library for making API requests
+requests
+
+authlib          # OAuth client (Google, GitHub)
+python-jose      # JWT encode/decode
+passlib          # Password hashing (for email auth)
+sqlalchemy       # ORM for SQLite
+httpx            # Async HTTP client for OAuth token exchange
+itsdangerous # session signing

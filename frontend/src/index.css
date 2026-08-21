@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 240 33% 6%;
+    --foreground: 240 20% 98%;
+
+    --card: 240 33% 11%;
+    --card-foreground: 240 20% 98%;
+
+    --popover: 240 33% 11%;
+    --popover-foreground: 240 20% 98%;
+
+    --primary: 263 70% 58%;
+    --primary-foreground: 240 20% 98%;
+
+    --secondary: 240 33% 8%;
+    --secondary-foreground: 240 20% 98%;
+
+    --muted: 240 33% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 271 81% 56%;
+    --accent-foreground: 240 20% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 240 20% 98%;
+
+    --border: 240 33% 18%;
+    --input: 240 33% 18%;
+    --ring: 263 70% 58%;
+
+    --radius: 0.75rem;
+
+    --surface: 240 33% 10%;
+    --glow: 263 84% 50%;
+    --highlight: 292 90% 73%;
+
+    --sidebar-background: 240 33% 6%;
+    --sidebar-foreground: 240 20% 98%;
+    --sidebar-primary: 263 70% 58%;
+    --sidebar-primary-foreground: 240 20% 98%;
+    --sidebar-accent: 240 33% 14%;
+    --sidebar-accent-foreground: 240 20% 98%;
+    --sidebar-border: 240 33% 18%;
+    --sidebar-ring: 263 70% 58%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    position: relative;
+  }
+  .gradient-text {
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--highlight)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .btn-primary {
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+    color: hsl(var(--primary-foreground));
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+    border: none;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
+    transform: scale(1.05);
+  }
+  .btn-ghost {
+    border: 1px solid hsl(var(--primary));
+    color: hsl(var(--primary));
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    background: hsl(var(--primary) / 0.1);
+  }
+  .section-label {
+    color: hsl(var(--primary));
+    font-family: monospace;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .section-heading {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .section-subtext {
+    color: hsl(var(--muted-foreground));
+    font-size: 1.125rem;
+    text-align: center;
+    max-width: 42rem;
+    margin: 0 auto 3rem;
+  }
+  .purple-glow {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(120px);
+    opacity: 0.2;
+    pointer-events: none;
+    background: hsl(var(--primary));
+  }
+}
+
+/* ─── Fade-up scroll animation ─────────────────────────────────── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  will-change: opacity, transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Keyframes ─────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-18px) rotate(2deg); }
+}
+
+@keyframes float-delay {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-14px) rotate(-2deg); }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0) translateX(-50%); }
+  50%       { transform: translateY(10px) translateX(-50%); }
+}
+
+@keyframes menuSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes menuItemFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation utility classes ─────────────────────────────────── */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+.animate-float-delay {
+  animation: float-delay 8s ease-in-out 1s infinite;
+  will-change: transform;
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-delay,
+  .animate-bounce-slow {
+    animation: none;
+  }
+}

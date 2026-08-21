@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+sqlalchemy
+pymysql
+cryptography
+httpx
+authlib
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+agno
+google-genai
+pillow
+pydantic[email]
