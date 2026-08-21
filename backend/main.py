@@ -91,12 +91,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://graphology.ulwerealestate.com"],  # React dev server
+    allow_origins=[
+        "http://localhost:5173",
+        "https://graphology.ulwerealestate.com",
+        "https://graphology-0705.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # ---------------------------------------------------------------------------
 # Routers
 # ---------------------------------------------------------------------------
