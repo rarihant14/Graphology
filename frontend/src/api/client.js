@@ -13,7 +13,7 @@ export const setToken = (token) => {
 export const getToken = () => _token;
 
 const client = axios.create({
-  baseURL:"https://graphology-backend.onrender.com",
+  baseURL: "https://graphology-846t.onrender.com",
   timeout: 600000,
   headers: {
     "Content-Type": "application/json",
