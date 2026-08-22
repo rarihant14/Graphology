@@ -95,6 +95,7 @@ app.add_middleware(
         "http://localhost:5173",
         "https://graphology.ulwerealestate.com",
         "https://graphology-0705.onrender.com",
+        "https://graphology-1.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
