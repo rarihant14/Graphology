@@ -88,19 +88,19 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # CORS middleware
 # ---------------------------------------------------------------------------
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "https://graphology-5f7b.onrender.com",
         "https://graphology-846t.onrender.com",
-        "https://graphology-1.onrender.com",
-      "https://graphology-5f7b.onrender.com"
+        
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ---------------------------------------------------------------------------
 # Routers
