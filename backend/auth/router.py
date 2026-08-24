@@ -55,7 +55,7 @@ GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://graphology-846t.onrender.com/auth/google/callback")
 
-FRONTEND_SUCCESS_URL = os.getenv("FRONTEND_SUCCESS_URL", "https://graphology-5f7b.onrender.com/home")
+FRONTEND_SUCCESS_URL = os.getenv("FRONTEND_SUCCESS_URL", "https://graphology-5f7b.onrender.com/")
 
 FRONTEND_ERROR_URL = os.getenv("FRONTEND_ERROR_URL", "https://graphology-5f7b.onrender.com/login?error=auth_failed")
 # Google OAuth endpoints
