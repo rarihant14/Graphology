@@ -53,11 +53,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
-GOOGLE_REDIRECT_URI = "https://graphology-846t.onrender.com/auth/google/callback"
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://graphology-846t.onrender.com/auth/google/callback")
 
-FRONTEND_SUCCESS_URL = "https://graphology.ulwerealestate.com/home"
+FRONTEND_SUCCESS_URL = os.getenv("FRONTEND_SUCCESS_URL", "https://graphology-5f7b.onrender.com/home")
 
-FRONTEND_ERROR_URL = "https://graphology.ulwerealestate.com/login?error=auth_failed"
+FRONTEND_ERROR_URL = os.getenv("FRONTEND_ERROR_URL", "https://graphology-5f7b.onrender.com/login?error=auth_failed")
 # Google OAuth endpoints
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
