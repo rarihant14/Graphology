@@ -53,7 +53,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
-GOOGLE_REDIRECT_URI = "https://graphology-backend.onrender.com/auth/google/callback"
+GOOGLE_REDIRECT_URI = "https://graphology-846t.onrender.com/auth/google/callback"
 
 FRONTEND_SUCCESS_URL = "https://graphology.ulwerealestate.com/home"
 
