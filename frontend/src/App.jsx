@@ -14,7 +14,6 @@
  *  /history     → ProtectedRoute → HistoryPage
  *  *            → redirect to /
  */
-
 /**
  * App.jsx — Root routing component for Graphology AI Agent.
  *
@@ -68,7 +67,7 @@ export const handleAnalysisClick = () => {
 const AppRoutes = () => (
   <Routes>
     {/* Public landing page — root */}
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<LandingPage handleAnalysisClick={handleAnalysisClick} />} />
 
     {/* Public pages */}
     <Route path="/login" element={<LoginPage />} />
