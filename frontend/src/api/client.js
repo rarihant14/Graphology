@@ -1,6 +1,9 @@
 /**
  * client.js — Configured Axios instance for the Graphology AI Agent frontend.
  */
+/**
+ * client.js — Configured Axios instance for the Graphology AI Agent frontend.
+ */
 
 import axios from "axios";
 
