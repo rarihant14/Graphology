@@ -130,7 +130,8 @@ def _build_token_redirect(user: User) -> RedirectResponse:
     with the token embedded as a URL query parameter.
     """
     token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    redirect_url = f"{FRONTEND_SUCCESS_URL}?token={token}"
+    base_url = FRONTEND_SUCCESS_URL.rstrip('/')
+    redirect_url = f"{base_url}/?token={token}"
     logger.info("Redirecting user_id=%d to frontend with JWT.", user.id)
     return RedirectResponse(url=redirect_url)
 
