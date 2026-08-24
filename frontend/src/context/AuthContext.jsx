@@ -16,6 +16,15 @@
  * client.js always has the latest token.
  */
 
+/**
+ * AuthContext.jsx — Global authentication state management.
+ *
+ * IMPORTANT: Token is stored ONLY in client.js module-level variable.
+ * This file imports setToken/getToken from client.js — it does NOT
+ * define its own token store. This ensures the Axios interceptor in
+ * client.js always has the latest token.
+ */
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { setToken, getToken, getMe } from "../api/client";
 
@@ -66,7 +75,7 @@ export const AuthProvider = ({ children }) => {
 
         // If logged in via URL token redirect, navigate to /home
         if (urlToken) {
-          window.location.href = "/home";
+          window.location.hash = "#/home";
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);
