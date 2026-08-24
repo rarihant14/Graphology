@@ -15,7 +15,24 @@
  *  *            → redirect to /
  */
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+/**
+ * App.jsx — Root routing component for Graphology AI Agent.
+ *
+ * Structure:
+ *  - AuthProvider wraps everything for global auth state
+ *  - Toaster for global toast notifications
+ *  - BrowserRouter with protected and public routes
+ *
+ * Routes:
+ *  /            → LandingPage (public marketing page)
+ *  /login       → LoginPage (public)
+ *  /appointment → AppointmentPage (public)
+ *  /home        → ProtectedRoute → HomePage
+ *  /history     → ProtectedRoute → HistoryPage
+ *  *            → redirect to /
+ */
+
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -38,9 +55,9 @@ import AppointmentPage from "./pages/AppointmentPage";
 export const handleAnalysisClick = () => {
   const token = localStorage.getItem("auth_token");
   if (token) {
-    window.location.href = "/home";
+    window.location.hash = "#/home";
   } else {
-    window.location.href = "/login";
+    window.location.hash = "#/login";
   }
 };
 
@@ -73,7 +90,7 @@ const AppRoutes = () => (
 // ---------------------------------------------------------------------------
 
 const App = () => (
-  <BrowserRouter>
+  <HashRouter>
     <AuthProvider>
       <Toaster
         position="top-right"
@@ -91,7 +108,7 @@ const App = () => (
       />
       <AppRoutes />
     </AuthProvider>
-  </BrowserRouter>
+  </HashRouter>
 );
 
 export default App;
