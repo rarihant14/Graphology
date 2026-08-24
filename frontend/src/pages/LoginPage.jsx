@@ -201,7 +201,7 @@ const LoginPage = () => {
 
             {/* Google button */}
             <button
-              onClick={() => { window.location.href = "https://graphology-backend.onrender.com/auth/google"; }}
+              onClick={() => { window.location.href = "https://graphology-846t.onrender.com/auth/google"; }}
               className="w-full flex items-center justify-center gap-3 cursor-pointer transition-all duration-300"
               style={{
                 background: "linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))",
