@@ -13,8 +13,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 # Model constants — update these to swap models project-wide
-VISION_MODEL = "gemini-2.5-flash-lite"   # Model used for image/vision tasks
-TEXT_MODEL   = "gemini-2.5-flash-lite"   # Model used for text-only tasks
+VISION_MODEL = "gemini-3.1-flash-lite"   # Model used for image/vision tasks
+TEXT_MODEL   = "gemini-3.1-flash-lite"   # Model used for text-only tasks
 
 
 # Client initialisation

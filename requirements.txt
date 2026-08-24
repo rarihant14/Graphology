@@ -4,6 +4,9 @@ agno
 # Google Gemini API client for generative AI capabilities
 google-genai
 
+# LangChain integration for Google Gemini chat models
+langchain-google-genai
+
 # FastAPI web framework for building REST APIs
 fastapi
 

@@ -53,11 +53,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
-GOOGLE_REDIRECT_URI = "https://graphology-backend.onrender.com/auth/google/callback"
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://graphology-846t.onrender.com/auth/google/callback")
 
-FRONTEND_SUCCESS_URL = "https://graphology.ulwerealestate.com/home"
+FRONTEND_SUCCESS_URL = os.getenv("FRONTEND_SUCCESS_URL", "https://graphology-5f7b.onrender.com/")
 
-FRONTEND_ERROR_URL = "https://graphology.ulwerealestate.com/login?error=auth_failed"
+FRONTEND_ERROR_URL = os.getenv("FRONTEND_ERROR_URL", "https://graphology-5f7b.onrender.com/login?error=auth_failed")
 # Google OAuth endpoints
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -130,7 +130,8 @@ def _build_token_redirect(user: User) -> RedirectResponse:
     with the token embedded as a URL query parameter.
     """
     token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    redirect_url = f"{FRONTEND_SUCCESS_URL}?token={token}"
+    base_url = FRONTEND_SUCCESS_URL.rstrip('/')
+    redirect_url = f"{base_url}/?token={token}"
     logger.info("Redirecting user_id=%d to frontend with JWT.", user.id)
     return RedirectResponse(url=redirect_url)
 

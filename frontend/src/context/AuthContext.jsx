@@ -52,10 +52,13 @@ export const AuthProvider = ({ children }) => {
         }
 
         // -- Step 3: Verify token and load user info --
-        // getMe() uses apiClient which already has the Authorization interceptor
         const response = await getMe();
         setUser(response.data);
 
+        // If logged in via URL token redirect, navigate to /home
+        if (urlToken) {
+          window.location.href = "/home";
+        }
       } catch (error) {
         console.error("Auth initialization failed:", error);
         setToken(null);

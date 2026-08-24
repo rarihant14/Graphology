@@ -8,9 +8,14 @@ let _token = null;
 
 export const setToken = (token) => {
   _token = token;
+  if (token) {
+    localStorage.setItem("auth_token", token);
+  } else {
+    localStorage.removeItem("auth_token");
+  }
 };
 
-export const getToken = () => _token;
+export const getToken = () => _token || localStorage.getItem("auth_token");
 
 const client = axios.create({
   baseURL: "https://graphology-846t.onrender.com",
