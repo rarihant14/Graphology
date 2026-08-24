@@ -1,8 +1,8 @@
-/**
- * client.js — Configured Axios instance for the Graphology AI Agent frontend.
- */
+
 
 import axios from "axios";
+
+let _token = null;
 
 export const setToken = (token) => {
   _token = token;
@@ -64,3 +64,4 @@ export const bookAppointment = async (data) => {
   const response = await client.post("/appointments", data);
   return response.data;
 };
+
