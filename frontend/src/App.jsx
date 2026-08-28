@@ -14,6 +14,22 @@
  *  /history     → ProtectedRoute → HistoryPage
  *  *            → redirect to /
  */
+/**
+ * App.jsx — Root routing component for Graphology AI Agent.
+ *
+ * Structure:
+ *  - AuthProvider wraps everything for global auth state
+ *  - Toaster for global toast notifications
+ *  - BrowserRouter with protected and public routes
+ *
+ * Routes:
+ *  /            → LandingPage (public marketing page)
+ *  /login       → LoginPage (public)
+ *  /appointment → AppointmentPage (public)
+ *  /home        → ProtectedRoute → HomePage
+ *  /history     → ProtectedRoute → HistoryPage
+ *  *            → redirect to /
+ */
 
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
