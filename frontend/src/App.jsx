@@ -15,7 +15,7 @@
  *  *            → redirect to /
  */
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -38,9 +38,9 @@ import AppointmentPage from "./pages/AppointmentPage";
 export const handleAnalysisClick = () => {
   const token = localStorage.getItem("auth_token");
   if (token) {
-    window.location.href = "/home";
+    window.location.hash = "#/home";
   } else {
-    window.location.href = "/login";
+    window.location.hash = "#/login";
   }
 };
 
@@ -51,7 +51,7 @@ export const handleAnalysisClick = () => {
 const AppRoutes = () => (
   <Routes>
     {/* Public landing page — root */}
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<LandingPage handleAnalysisClick={handleAnalysisClick} />} />
 
     {/* Public pages */}
     <Route path="/login" element={<LoginPage />} />
@@ -73,7 +73,7 @@ const AppRoutes = () => (
 // ---------------------------------------------------------------------------
 
 const App = () => (
-  <BrowserRouter>
+  <HashRouter>
     <AuthProvider>
       <Toaster
         position="top-right"
@@ -91,7 +91,7 @@ const App = () => (
       />
       <AppRoutes />
     </AuthProvider>
-  </BrowserRouter>
+  </HashRouter>
 );
 
 export default App;

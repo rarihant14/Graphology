@@ -69,8 +69,19 @@ export const useAnalysis = () => {
   // handleFileSelect — store file and create object URL for preview
   // -------------------------------------------------------------------------
 
-  const handleFileSelect = useCallback((file) => {
-    if (!file) return;
+  const handleFileSelect = useCallback((file, onError) => {
+    if (!file) return false;
+
+    // Validate 15MB file size limit
+    const MAX_SIZE_BYTES = 15 * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+      const msg = "File size exceeds 15MB. Please select a smaller handwriting image.";
+      setError(msg);
+      if (typeof onError === "function") {
+        onError(msg);
+      }
+      return false;
+    }
 
     // Revoke previous preview URL to avoid memory leaks
     if (previewUrl) {
@@ -82,6 +93,7 @@ export const useAnalysis = () => {
     setReport(null);
     setError(null);
     setProgressStep(null);
+    return true;
   }, [previewUrl]);
 
   // -------------------------------------------------------------------------

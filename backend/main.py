@@ -166,12 +166,12 @@ async def analyze(
             detail=f"Could not read the uploaded file: {exc}",
         ) from exc
 
-    # -- Validate file size (max 10MB) --
-    max_size = 10 * 1024 * 1024  # 10MB in bytes
+    # -- Validate file size (max 15MB) --
+    max_size = 15 * 1024 * 1024  # 15MB in bytes
     if len(image_bytes) > max_size:
         raise HTTPException(
             status_code=400,
-            detail="File too large. Maximum allowed size is 10MB.",
+            detail="File too large. Maximum allowed size is 15MB.",
         )
 
     # -- Run graphology pipeline --

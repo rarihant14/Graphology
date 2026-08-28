@@ -1,10 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import toast, { Toaster } from "react-hot-toast";
-import { Upload, ImagePlus, X, Sparkles, PenLine, LogOut, History } from "lucide-react";
+import { Upload, ImagePlus, X, Sparkles, PenLine, LogOut, History, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import ReportCard from "../components/ReportCard";
+import CameraModal from "../components/CameraModal";
 import { useAnalysis } from "../hooks/useAnalysis";
 import { useAuth } from "../context/AuthContext";
 
@@ -22,6 +23,9 @@ const PenIcon = () => (
 );
 
 const HomePage = () => {
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const cameraInputRef = useRef(null);
+
   const {
     selectedFile,
     previewUrl,
@@ -51,17 +55,31 @@ const HomePage = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
     maxFiles: 1,
+    maxSize: 15 * 1024 * 1024, // 15MB
     disabled: isAnalyzing,
-    onDropAccepted: (files) => handleFileSelect(files[0]),
-    onDropRejected: () =>
-      toast.error("Only JPEG and PNG images are accepted.", {
-        style: {
-          background: "hsl(var(--card))",
-          color: "#f87171",
-          border: "1px solid rgba(239,68,68,0.2)",
-          borderRadius: "12px",
-        },
-      }),
+    onDropAccepted: (files) => handleFileSelect(files[0], showError),
+    onDropRejected: (rejections) => {
+      const err = rejections[0]?.errors[0];
+      if (err?.code === "file-too-large") {
+        toast.error("File size exceeds 15MB. Please upload a smaller image.", {
+          style: {
+            background: "hsl(var(--card))",
+            color: "#f87171",
+            border: "1px solid rgba(239,68,68,0.2)",
+            borderRadius: "12px",
+          },
+        });
+      } else {
+        toast.error("Only JPEG and PNG images (up to 15MB) are accepted.", {
+          style: {
+            background: "hsl(var(--card))",
+            color: "#f87171",
+            border: "1px solid rgba(239,68,68,0.2)",
+            borderRadius: "12px",
+          },
+        });
+      }
+    },
   });
 
   const currentStep = PROGRESS_STEPS.find((s) => s.key === progressStep);
@@ -285,9 +303,53 @@ const HomePage = () => {
                         {isDragActive ? "Drop your image here" : "Drag & drop your handwriting"}
                       </p>
                       <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        or click to browse — JPEG, PNG accepted
+                        or click to browse — JPEG, PNG accepted (up to 15MB)
                       </p>
                     </div>
+
+                    {/* Camera Photo Action */}
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mt-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsCameraOpen(true);
+                        }}
+                        className="px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200"
+                        style={{
+                          background: "hsl(var(--primary) / 0.15)",
+                          border: "1px solid hsl(var(--primary) / 0.35)",
+                          color: "hsl(var(--primary))",
+                          boxShadow: "0 2px 12px hsl(var(--primary) / 0.15)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "hsl(var(--primary) / 0.25)";
+                          e.currentTarget.style.transform = "scale(1.03)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "hsl(var(--primary) / 0.15)";
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        <Camera size={16} />
+                        Take Photo with Camera
+                      </button>
+
+                      {/* Hidden native input for direct mobile camera capture fallback */}
+                      <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            handleFileSelect(e.target.files[0], showError);
+                          }
+                        }}
+                      />
+                    </div>
+
                     {/* Tips */}
                     <div
                       className="flex items-center gap-4 mt-2"
@@ -421,6 +483,13 @@ const HomePage = () => {
             </div>
           )}
         </main>
+
+        {/* Camera Capture Modal */}
+        <CameraModal
+          isOpen={isCameraOpen}
+          onClose={() => setIsCameraOpen(false)}
+          onCapture={(file) => handleFileSelect(file, showError)}
+        />
       </div>
     </>
   );

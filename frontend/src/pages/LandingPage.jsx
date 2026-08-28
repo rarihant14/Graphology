@@ -8,7 +8,16 @@ import FaqSection from "@/components/FaqSection";
 import CtaBanner from "@/components/CtaBanner";
 import Footer from "@/components/Footer";
 
-const LandingPage = ({ handleAnalysisClick }) => {
+const defaultHandleAnalysisClick = () => {
+  const token = localStorage.getItem("auth_token");
+  if (token) {
+    window.location.hash = "#/home";
+  } else {
+    window.location.hash = "#/login";
+  }
+};
+
+const LandingPage = ({ handleAnalysisClick = defaultHandleAnalysisClick }) => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar handleAnalysisClick={handleAnalysisClick} />

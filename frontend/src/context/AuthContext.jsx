@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
         // If logged in via URL token redirect, navigate to /home
         if (urlToken) {
-          window.location.href = "/home";
+          window.location.hash = "#/home";
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);
