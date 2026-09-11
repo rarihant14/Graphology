@@ -18,6 +18,7 @@ from agno.tools import tool
 from config import get_vision_model, get_text_model
 from models import HandwritingFeatures, GraphologyReport
 from .rule_engine import apply_rules
+from .image_enhancement import enhance_image
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,9 @@ def _extract_handwriting_features(image_base64: str) -> str:
 
     try:
         image_bytes = base64.b64decode(image_base64)
+
+        # Enhance handwriting image
+        image_bytes = enhance_image(image_bytes)
 
         from google.genai import types as genai_types
         vision_model = get_vision_model()
