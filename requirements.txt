@@ -37,3 +37,6 @@ passlib          # Password hashing (for email auth)
 sqlalchemy       # ORM for SQLite
 httpx            # Async HTTP client for OAuth token exchange
 itsdangerous # session signing
+opencv-python-headless  # Image processing (headless — no system GUI libs needed on a server)
+numpy                   # Array operations used by opencv
+

@@ -13,3 +13,5 @@ agno
 google-genai
 pillow
 pydantic[email]
+opencv-python-headless
+numpy
