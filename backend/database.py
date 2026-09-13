@@ -4,7 +4,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from sqlalchemy import (
-    create_engine, Column, Integer, String,
+    create_engine, text, Column, Integer, String,
     Text, DateTime, ForeignKey
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
@@ -70,6 +70,7 @@ class Analysis(SqliteBase):
     user_id           = Column(Integer, ForeignKey("users.id"), nullable=False)
     personality_traits = Column(Text)
     disclaimer        = Column(Text)
+    report_json       = Column(Text, nullable=True)
     created_at        = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="analyses")
@@ -98,6 +99,20 @@ class Appointment(MySQLBase):
 
 SqliteBase.metadata.create_all(bind=sqlite_engine)
 MySQLBase.metadata.create_all(bind=mysql_engine)
+
+# ---------------------------------------------------------------------------
+# Lightweight migration — add report_json to pre-existing analyses tables.
+# create_all() only creates missing tables, it never alters existing ones,
+# so a DB created before this column existed needs it added explicitly.
+# ---------------------------------------------------------------------------
+
+try:
+    with sqlite_engine.begin() as conn:
+        conn.execute(text("ALTER TABLE analyses ADD COLUMN report_json TEXT"))
+    logger.info("Added report_json column to analyses table.")
+except Exception:
+    # Column already exists (or table is brand new and already has it) — fine.
+    pass
 
 # ---------------------------------------------------------------------------
 # Session dependencies

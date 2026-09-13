@@ -54,7 +54,7 @@ export const analyzeHandwriting = (formData) => {
   });
 };
 
-export const getHistory = () => client.get("/history");
+export const getHistory = () => client.get("/api/history");
 
 export const getMe = () => client.get("/auth/me");
 

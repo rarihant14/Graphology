@@ -6,11 +6,18 @@ import base64
 import logging
 
 from config import GEMINI_API_KEY, TEXT_MODEL
-from models import GraphologyReport, HandwritingFeatures
+from models import DimensionScore, GraphologyReport, HandwritingFeatures
+from .dimension_scoring import (
+    compute_confidence_note,
+    compute_dimension_scores,
+    compute_overall_score,
+    pick_archetype,
+)
 from .tools import (
     _extract_handwriting_features,
     _apply_graphology_rules,
     _generate_personality_report,
+    _generate_report_story,
 )
 import json
 
@@ -52,15 +59,14 @@ async def run_graphology_pipeline(image_bytes: bytes) -> GraphologyReport:
     # Step 4: Generate personality report via Gemini text
     logger.info("Step 3 — Generating personality report.")
     try:
-        report_json: str = _generate_personality_report(interpretations_json)
-        logger.info("Report generated: %s", report_json[:200])
+        personality_report_json: str = _generate_personality_report(interpretations_json)
+        logger.info("Report generated: %s", personality_report_json[:200])
     except Exception as exc:
         raise RuntimeError(f"Narrative generation failed: {exc}") from exc
 
-    # Step 5: Parse final report JSON
-    logger.info("Assembling GraphologyReport.")
+    # Step 5: Parse personality report JSON
     try:
-        report_data = json.loads(report_json)
+        report_data = json.loads(personality_report_json)
         personality_traits = report_data.get("personality_traits", _FALLBACK_TRAITS)
         disclaimer = report_data.get("disclaimer", _FALLBACK_DISCLAIMER)
     except (json.JSONDecodeError, Exception) as exc:
@@ -68,10 +74,31 @@ async def run_graphology_pipeline(image_bytes: bytes) -> GraphologyReport:
         personality_traits = _FALLBACK_TRAITS
         disclaimer = _FALLBACK_DISCLAIMER
 
+    # Step 6: Compute the deterministic, evidence-backed 7-dimension profile.
+    # Everything here is derived from the actual extracted features — no LLM
+    # involvement — so scores and evidence stay fully auditable.
+    logger.info("Step 4 — Computing 7-dimension profile.")
+    features_obj = HandwritingFeatures(**json.loads(features_json))
+    interpretations: dict = json.loads(interpretations_json)
+    dimension_results = compute_dimension_scores(features_obj, interpretations)
+    overall_score = compute_overall_score(dimension_results)
+    archetype = pick_archetype(dimension_results)
+    confidence_note = compute_confidence_note(features_obj)
+
+    # Step 7: Narrate the computed scores into one short story paragraph.
+    logger.info("Step 5 — Generating narrative story.")
+    story = _generate_report_story(dimension_results, archetype, overall_score)
+
     report = GraphologyReport(
-        features=HandwritingFeatures(),
+        features=features_obj,
         personality_traits=personality_traits,
         disclaimer=disclaimer,
+        overall_score=overall_score,
+        archetype=archetype["name"],
+        archetype_tagline=archetype["tagline"],
+        dimensions=[DimensionScore(**result) for result in dimension_results],
+        story=story,
+        confidence_note=confidence_note,
     )
 
     logger.info("Pipeline complete.")
