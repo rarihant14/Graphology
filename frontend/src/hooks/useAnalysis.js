@@ -11,6 +11,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { analyzeHandwriting } from "../api/client";
+import { preprocessImage } from "../utils/imagePreprocessing";
 
 // ---------------------------------------------------------------------------
 // Progress step timing (ms) — simulates pipeline stages visually
@@ -28,12 +29,13 @@ const STEP_TIMINGS = {
 // ---------------------------------------------------------------------------
 
 export const useAnalysis = () => {
-  const [selectedFile,  setSelectedFile]  = useState(null);
-  const [previewUrl,    setPreviewUrl]    = useState(null);
-  const [isAnalyzing,   setIsAnalyzing]   = useState(false);
-  const [report,        setReport]        = useState(null);
-  const [error,         setError]         = useState(null);
-  const [progressStep,  setProgressStep]  = useState(null);
+  const [selectedFile,     setSelectedFile]     = useState(null);
+  const [previewUrl,       setPreviewUrl]       = useState(null);
+  const [isAnalyzing,      setIsAnalyzing]      = useState(false);
+  const [isPreprocessing,  setIsPreprocessing]  = useState(false);
+  const [report,           setReport]           = useState(null);
+  const [error,            setError]            = useState(null);
+  const [progressStep,     setProgressStep]     = useState(null);
 
   // Refs to track and cancel progress timers if API finishes early or fails
   const timersRef = useRef([]);
@@ -69,7 +71,7 @@ export const useAnalysis = () => {
   // handleFileSelect — store file and create object URL for preview
   // -------------------------------------------------------------------------
 
-  const handleFileSelect = useCallback((file, onError) => {
+  const handleFileSelect = useCallback(async (file, onError) => {
     if (!file) return false;
 
     // Validate 15MB file size limit
@@ -83,16 +85,24 @@ export const useAnalysis = () => {
       return false;
     }
 
+    setIsPreprocessing(true);
+
+    // Clean up (contrast, sharpen, normalize size/orientation) before the
+    // image is previewed or uploaded — falls back to the original file if
+    // preprocessing fails for any reason.
+    const processedFile = await preprocessImage(file);
+
     // Revoke previous preview URL to avoid memory leaks
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
 
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setSelectedFile(processedFile);
+    setPreviewUrl(URL.createObjectURL(processedFile));
     setReport(null);
     setError(null);
     setProgressStep(null);
+    setIsPreprocessing(false);
     return true;
   }, [previewUrl]);
 
@@ -178,6 +188,7 @@ export const useAnalysis = () => {
     selectedFile,
     previewUrl,
     isAnalyzing,
+    isPreprocessing,
     report,
     error,
     progressStep,

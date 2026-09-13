@@ -14,6 +14,7 @@ Run locally with:
 import sys
 import os
 import asyncio
+import json
 
 # Must be the very first thing — adds project root to sys.path before
 # any submodule imports so that config, models, rule_engine are all found
@@ -60,7 +61,7 @@ async def lifespan(app: FastAPI):
 
     print()
     print("=" * 60)
-    print("  🖊️  Graphology AI Agent API is live")
+    print("  Graphology AI Agent API is live")
     print("  Endpoints:")
     print("    POST /analyze   — submit a handwriting image")
     print("    GET  /history   — fetch past analyses")
@@ -214,6 +215,7 @@ async def analyze(
             user_id=current_user.id,
             personality_traits=report.personality_traits,
             disclaimer=report.disclaimer,
+            report_json=report.model_dump_json(),
         )
         db.add(analysis_record)
         db.commit()
@@ -263,6 +265,20 @@ async def get_history(
             "personality_traits": a.personality_traits,
             "disclaimer": a.disclaimer,
             "created_at": a.created_at.isoformat(),
+            # None for analyses saved before the dimension-scoring feature —
+            # the frontend falls back to the plain-text fields above for those.
+            "report": _parse_stored_report(a.report_json),
         }
         for a in analyses
     ]
+
+
+def _parse_stored_report(raw_json: str | None) -> dict | None:
+    """Parse a persisted report_json blob, tolerating legacy rows that have none."""
+    if not raw_json:
+        return None
+    try:
+        return json.loads(raw_json)
+    except json.JSONDecodeError:
+        logger.warning("Could not parse stored report_json — returning None.")
+        return None

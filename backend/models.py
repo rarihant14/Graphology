@@ -66,13 +66,38 @@ class HandwritingFeatures(BaseModel):
     )
 
 
+class DimensionScore(BaseModel):
+    """
+    A single scored life dimension (e.g. Emotional Balance, Money Mindset)
+    within the 7-dimension profile, together with the evidence that produced
+    its score.
+
+    The score and evidence are always computed deterministically from the
+    extracted HandwritingFeatures — never invented by an LLM — so every
+    number here can be traced back to an actually observed feature value.
+    """
+
+    key: str = Field(description="Stable identifier, e.g. 'emotional_balance'.")
+    label: str = Field(description="Human-readable dimension name, e.g. 'Emotional Balance'.")
+    score: int = Field(ge=0, le=100, description="Deterministic 0-100 score for this dimension.")
+    essence: str = Field(description="Plain-English summary of what this score suggests.")
+    evidence: list[str] = Field(
+        description="Visible handwriting cues that produced this score — 'why we see it'. "
+                    "Sourced directly from the rule engine's feature interpretations.",
+    )
+    strength: str = Field(description="How this trait can show up as a strength.")
+    blind_spot: str = Field(description="The potential downside of this trait when overused.")
+    next_move: str = Field(description="One small, practical action tied to this dimension.")
+    confidence: str = Field(description="'high' or 'low' — how many features contributed evidence.")
+
+
 class GraphologyReport(BaseModel):
     """
     A complete graphology report produced from a handwriting sample.
 
     Combines the extracted HandwritingFeatures with a natural-language
-    summary of inferred personality traits and a mandatory disclaimer
-    reminding readers that graphology is not a validated science.
+    summary of inferred personality traits, a mandatory disclaimer, and a
+    scored 7-dimension profile with evidence-backed reasoning for each score.
     """
 
     features: HandwritingFeatures = Field(
@@ -85,4 +110,25 @@ class GraphologyReport(BaseModel):
     disclaimer: str = Field(
         description="A statement clarifying the limitations and non-scientific "
                     "nature of graphological analysis.",
+    )
+    overall_score: int = Field(
+        default=50, ge=0, le=100,
+        description="Overall Life Alignment Quotient — average of the 7 dimension scores.",
+    )
+    archetype: str = Field(
+        default="",
+        description="Deterministically chosen label for the highest-scoring dimension.",
+    )
+    archetype_tagline: str = Field(default="", description="One-line description of the archetype.")
+    dimensions: list[DimensionScore] = Field(
+        default_factory=list,
+        description="The 7-dimension scored profile with evidence for each score.",
+    )
+    story: str = Field(
+        default="",
+        description="Short narrative paragraph tying the dimension scores together.",
+    )
+    confidence_note: str = Field(
+        default="",
+        description="Plain-language transparency note on how much of the sample was observable.",
     )

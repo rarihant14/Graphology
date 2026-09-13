@@ -36,12 +36,19 @@ def _extract_handwriting_features(image_base64: str) -> str:
     """
     prompt = (
         "Analyze this handwriting image. Extract only observable, objective features. "
-        "Return only a raw JSON object with these exact keys: "
-        "letter_size(small/medium/large), slant(left/vertical/right/mixed), "
-        "baseline(straight/rising/falling/wavy), pressure(light/medium/heavy), "
-        "letter_spacing(cramped/normal/wide), word_spacing(narrow/normal/wide), "
-        "connectivity(printed/mixed/cursive), margin_usage(left-heavy/balanced/right-heavy/none), "
-        "loop_style(open/closed/absent), legibility(low/medium/high). "
+        "Return only a raw JSON object with these exact keys, and for each key choose "
+        "ONLY one of the exact allowed values listed in parentheses (do not invent other "
+        "wording — these values are matched literally downstream): "
+        "letter_size(small/medium/large), "
+        "slant(left/right/upright/mixed), "
+        "baseline(straight/ascending/descending/wavy), "
+        "pressure(light/medium/heavy), "
+        "letter_spacing(narrow/normal/wide), "
+        "word_spacing(narrow/normal/wide), "
+        "connectivity(connected/disconnected/mixed), "
+        "margin_usage(wide left/narrow left/wide right/narrow right/balanced), "
+        "loop_style(large upper loops/small upper loops/large lower loops/small lower loops/loopless), "
+        "legibility(very legible/moderately legible/illegible). "
         "Return only JSON, no markdown, no explanation."
     )
 
@@ -198,3 +205,61 @@ def _generate_personality_report(interpretations_json: str) -> str:
 def generate_personality_report(interpretations_json: str) -> str:
     """Agno tool wrapper — delegates to _generate_personality_report."""
     return _generate_personality_report(interpretations_json)
+
+
+# ---------------------------------------------------------------------------
+# Tool 4 — Text model: narrate the computed dimension scores into one story
+# ---------------------------------------------------------------------------
+
+def _generate_report_story(
+    dimension_results: list[dict],
+    archetype: dict,
+    overall_score: int,
+) -> str:
+    """
+    Raw function — called directly by the pipeline in agent.py.
+
+    Ask the Gemini text model for one short paragraph that ties the already
+    computed (deterministic) dimension scores together into a narrative.
+    The prompt explicitly forbids introducing any new facts — this call only
+    narrates numbers/evidence that were already computed, it never decides
+    them, so a failure or a low-quality response can never distort a score.
+    """
+    summary_lines = "\n".join(
+        f"- {r['label']}: {r['score']}/100 — {r['essence']}" for r in dimension_results
+    )
+
+    prompt = (
+        "You are a graphology report writer. Using ONLY the facts listed below, write one "
+        "short warm paragraph (4-6 sentences) that ties these scores together into a "
+        "narrative summary. Do not invent any new facts, traits, or handwriting details "
+        "beyond what is listed here. Use hedged language throughout (may, could, tends to).\n\n"
+        f"Archetype: {archetype['name']} — {archetype['tagline']}\n"
+        f"Overall Life Alignment Quotient: {overall_score}/100\n"
+        f"Dimension scores:\n{summary_lines}\n"
+    )
+
+    fallback_story = (
+        f"Your profile points to a {archetype['name'].lower()} pattern — "
+        f"{archetype['tagline'].lower()} With an overall alignment score of "
+        f"{overall_score}/100, your handwriting suggests a mix of strengths and growth "
+        "areas across the seven dimensions above."
+    )
+
+    try:
+        text_model = get_text_model()
+        response = text_model.generate_content(prompt)
+        story = response.text.strip()
+        return story or fallback_story
+    except Exception as exc:
+        logger.error("Unexpected error in generate_report_story: %s", exc)
+        return fallback_story
+
+
+@tool(
+    name="generate_report_story",
+    description="Narrates the computed dimension scores into one short story paragraph",
+)
+def generate_report_story(dimension_results: list[dict], archetype: dict, overall_score: int) -> str:
+    """Agno tool wrapper — delegates to _generate_report_story."""
+    return _generate_report_story(dimension_results, archetype, overall_score)

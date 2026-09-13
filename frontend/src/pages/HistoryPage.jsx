@@ -100,6 +100,18 @@ const AnalysisCard = ({ analysis, index }) => {
           <span className="text-sm font-medium" style={{ color: "#d1d5db" }}>
             Analysis #{index}
           </span>
+          {analysis.report && (
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                background: "rgba(124,58,237,0.1)",
+                border: "1px solid rgba(124,58,237,0.25)",
+                color: "#a78bfa",
+              }}
+            >
+              {analysis.report.archetype} • {analysis.report.overall_score}/100
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5" style={{ color: "#6b7280" }}>

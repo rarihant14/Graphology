@@ -30,6 +30,7 @@ const HomePage = () => {
     selectedFile,
     previewUrl,
     isAnalyzing,
+    isPreprocessing,
     report,
     progressStep,
     handleFileSelect,
@@ -56,7 +57,7 @@ const HomePage = () => {
     accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
     maxFiles: 1,
     maxSize: 15 * 1024 * 1024, // 15MB
-    disabled: isAnalyzing,
+    disabled: isAnalyzing || isPreprocessing,
     onDropAccepted: (files) => handleFileSelect(files[0], showError),
     onDropRejected: (rejections) => {
       const err = rejections[0]?.errors[0];
@@ -365,6 +366,17 @@ const HomePage = () => {
                 )}
               </div>
 
+              {/* Preprocessing indicator */}
+              {isPreprocessing && (
+                <div
+                  className="flex items-center justify-center gap-2 py-2"
+                  style={{ color: "hsl(var(--muted-foreground))", fontSize: "0.85rem" }}
+                >
+                  <div className="w-3 h-3 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
+                  Optimizing image for analysis...
+                </div>
+              )}
+
               {/* Progress bar */}
               {isAnalyzing && (
                 <div
@@ -405,10 +417,10 @@ const HomePage = () => {
               {/* Analyze button */}
               <button
                 onClick={() => handleAnalyze(showError)}
-                disabled={!selectedFile || isAnalyzing}
+                disabled={!selectedFile || isAnalyzing || isPreprocessing}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={
-                  !selectedFile || isAnalyzing
+                  !selectedFile || isAnalyzing || isPreprocessing
                     ? {
                         background: "hsl(var(--card) / 0.4)",
                         border: "1px solid hsl(var(--border))",
@@ -424,14 +436,14 @@ const HomePage = () => {
                       }
                 }
                 onMouseEnter={(e) => {
-                  if (selectedFile && !isAnalyzing) {
+                  if (selectedFile && !isAnalyzing && !isPreprocessing) {
                     e.currentTarget.style.transform = "translateY(-2px)";
                     e.currentTarget.style.boxShadow = "0 8px 32px hsl(var(--primary) / 0.5)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = selectedFile && !isAnalyzing
+                  e.currentTarget.style.boxShadow = selectedFile && !isAnalyzing && !isPreprocessing
                     ? "0 4px 24px hsl(var(--primary) / 0.35)"
                     : "none";
                 }}
@@ -454,10 +466,7 @@ const HomePage = () => {
           {/* Report */}
           {report && (
             <div className="flex flex-col gap-4">
-              <ReportCard
-                personalityTraits={report.personality_traits}
-                disclaimer={report.disclaimer}
-              />
+              <ReportCard report={report} />
               <button
                 onClick={clearReport}
                 className="w-full py-3.5 rounded-xl text-sm font-medium transition-all duration-200"
