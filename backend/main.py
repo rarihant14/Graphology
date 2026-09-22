@@ -27,11 +27,13 @@ from contextlib import asynccontextmanager
 from appointments.router import router as appointments_router
 from fastapi import FastAPI, File, HTTPException, UploadFile, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from agent.agent import run_graphology_pipeline
 from models import GraphologyReport
+from report_pdf import build_report_pdf
 
 # --- Auth & Database imports ---
 from auth.router import router as auth_router
@@ -229,6 +231,35 @@ async def analyze(
         db.rollback()
 
     return report
+
+
+class ReportPdfRequest(BaseModel):
+    report: GraphologyReport
+    image_base64: str | None = None
+
+
+@app.post(
+    "/api/report/pdf",
+    summary="Download a detailed PDF of a report",
+    response_class=Response,
+)
+async def download_report_pdf(
+    body: ReportPdfRequest,
+    current_user: User = Depends(get_current_user),   # 🔒 Protected
+) -> Response:
+    """Render the given report (plus optional handwriting sample) as a detailed PDF."""
+    try:
+        pdf = await asyncio.to_thread(
+            build_report_pdf, body.report, current_user.name or "", body.image_base64
+        )
+    except Exception as exc:
+        logger.exception("PDF generation failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Could not generate the PDF report.") from exc
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="Inksight_Graphology_Report.pdf"'},
+    )
 
 
 @app.get(

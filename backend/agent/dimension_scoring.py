@@ -18,6 +18,7 @@ No external dependencies beyond the project's own models module.
 """
 
 from models import HandwritingFeatures
+from .extended_rules import EXTRA_DIMENSION_RULES
 
 # ---------------------------------------------------------------------------
 # Dimension keys and display labels
@@ -93,6 +94,9 @@ DIMENSION_RULES: dict[str, dict[str, dict[str, int]]] = {
         "legibility": {"very legible": 70, "moderately legible": 65, "illegible": 50, "variable": 50, "stylised": 65},
     },
 }
+
+for _dim, _rules in EXTRA_DIMENSION_RULES.items():
+    DIMENSION_RULES[_dim].update(_rules)
 
 # ---------------------------------------------------------------------------
 # Band-based static copy — high (>=70) / medium (40-69) / low (<40).

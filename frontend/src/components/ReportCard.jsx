@@ -10,7 +10,8 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Sparkles, Copy, Check, ShieldAlert, TrendingUp, AlertTriangle, ArrowRight, Info } from "lucide-react";
+import client from "../api/client";
+import { Sparkles, Copy, Check, Download, Loader2, ShieldAlert, TrendingUp, AlertTriangle, ArrowRight, Info } from "lucide-react";
 
 const scoreColor = (score) => {
   if (score >= 70) return "#4ade80";
@@ -114,9 +115,11 @@ const DimensionCard = ({ dimension }) => {
 // ReportCard
 // ---------------------------------------------------------------------------
 
-const ReportCard = ({ report }) => {
+const ReportCard = ({ report, sampleUrl = null }) => {
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   const dimensions = report?.dimensions ?? [];
   const overallScore = report?.overall_score ?? null;
@@ -126,6 +129,44 @@ const ReportCard = ({ report }) => {
     const timer = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    setDownloadError("");
+    try {
+      let imageBase64 = null;
+      if (sampleUrl) {
+        try {
+          const blob = await (await fetch(sampleUrl)).blob();
+          imageBase64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          imageBase64 = null; // the PDF is still useful without the sample image
+        }
+      }
+      const res = await client.post(
+        "/api/report/pdf",
+        { report, image_base64: imageBase64 },
+        { responseType: "blob" },
+      );
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Inksight_Graphology_Report.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError("Could not generate the PDF. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handleCopy = async () => {
     const dimensionText = dimensions
@@ -142,7 +183,9 @@ const ReportCard = ({ report }) => {
     const fullReport =
       `GRAPHOLOGY AI — PERSONALITY ANALYSIS\n${"─".repeat(40)}\n\n` +
       (report?.archetype ? `Archetype: ${report.archetype} — ${report.archetype_tagline}\n` : "") +
-      (overallScore !== null ? `Overall Score: ${overallScore}/100\n\n` : "\n") +
+      (overallScore !== null ? `Overall Score: ${overallScore}/100\n` : "") +
+      ((report?.traits ?? []).length ? `Traits: ${report.traits.map((t) => t.label).join(", ")}\n` : "") +
+      "\n" +
       (report?.story ? `${report.story}\n\n` : `${report?.personality_traits ?? ""}\n\n`) +
       `${"─".repeat(40)}\nDIMENSIONS\n${"─".repeat(40)}\n\n${dimensionText}\n` +
       `${"─".repeat(40)}\nDISCLAIMER\n${report?.disclaimer ?? ""}`;
@@ -209,6 +252,17 @@ const ReportCard = ({ report }) => {
             </h2>
           </div>
 
+          <div className="flex items-center gap-2">
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+            style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.35)", color: "#c4b5fd", opacity: downloading ? 0.7 : 1 }}
+          >
+            {downloading
+              ? <><Loader2 size={12} className="animate-spin" /> Preparing PDF...</>
+              : <><Download size={12} strokeWidth={2} /> Download PDF</>}
+          </button>
           <button
             onClick={handleCopy}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
@@ -220,7 +274,9 @@ const ReportCard = ({ report }) => {
           >
             {copied ? <><Check size={12} strokeWidth={2.5} /> Copied!</> : <><Copy size={12} strokeWidth={2} /> Copy Report</>}
           </button>
+          </div>
         </div>
+        {downloadError && <p className="text-xs" style={{ color: "#f87171" }}>{downloadError}</p>}
 
         {/* Overall score + archetype */}
         {overallScore !== null && (
@@ -255,6 +311,22 @@ const ReportCard = ({ report }) => {
                 <span className="text-xs mt-1" style={{ color: "#6b7280" }}>{report.confidence_note}</span>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Trait tags */}
+        {(report?.traits ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {report.traits.map((t) => (
+              <span
+                key={t.label}
+                title={t.why ? `Seen in: ${t.why}` : undefined}
+                className="text-xs font-medium px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", color: "#c4b5fd" }}
+              >
+                {t.label}
+              </span>
+            ))}
           </div>
         )}
 

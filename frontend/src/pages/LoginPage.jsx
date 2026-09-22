@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../api/client";
 
 const GoogleIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24">
@@ -201,7 +202,7 @@ const LoginPage = () => {
 
             {/* Google button */}
             <button
-              onClick={() => { window.location.href = "https://graphology-846t.onrender.com/auth/google"; }}
+              onClick={() => { window.location.href = `${API_URL}/auth/google`; }}
               className="w-full flex items-center justify-center gap-3 cursor-pointer transition-all duration-300"
               style={{
                 background: "linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))",

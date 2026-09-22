@@ -21,6 +21,7 @@ No external dependencies beyond the project's own models module.
 """
 
 from models import HandwritingFeatures
+from .extended_rules import EXTRA_RULES
 
 
 # ---------------------------------------------------------------------------
@@ -301,6 +302,8 @@ GRAPHOLOGY_RULES: dict[str, dict[str, str]] = {
         ),
     },
 }
+
+GRAPHOLOGY_RULES.update(EXTRA_RULES)
 
 
 # ---------------------------------------------------------------------------

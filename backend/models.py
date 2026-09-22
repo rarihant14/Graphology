@@ -64,6 +64,57 @@ class HandwritingFeatures(BaseModel):
         description="Overall readability of the handwriting "
                     "(e.g. very legible, moderately legible, illegible).",
     )
+    t_bar_position: str = Field(
+        default="unknown",
+        description="Height at which the t-bar crosses the stem (high, middle, low).",
+    )
+    t_bar_length: str = Field(
+        default="unknown",
+        description="Length of the t-bar (short, medium, long).",
+    )
+    i_dot: str = Field(
+        default="unknown",
+        description="Style of i-dots (round, high, close, dash, absent).",
+    )
+    line_spacing: str = Field(
+        default="unknown",
+        description="Vertical space between lines of text (narrow, normal, wide).",
+    )
+    writing_speed: str = Field(
+        default="unknown",
+        description="Apparent writing speed (slow, moderate, fast).",
+    )
+    letter_form: str = Field(
+        default="unknown",
+        description="Overall shape of letters (rounded, angular, mixed).",
+    )
+    regularity: str = Field(
+        default="unknown",
+        description="Consistency of size, slant and spacing (consistent, irregular).",
+    )
+    ending_strokes: str = Field(
+        default="unknown",
+        description="How words and strokes end (abrupt, tapering, extended).",
+    )
+    capital_size: str = Field(
+        default="unknown",
+        description="Size of capital letters relative to lowercase (small, medium, large).",
+    )
+    zone_emphasis: str = Field(
+        default="unknown",
+        description="Which zone dominates (upper, middle, lower, balanced).",
+    )
+    stroke_quality: str = Field(
+        default="unknown",
+        description="Line quality of the strokes (smooth, tremulous).",
+    )
+
+
+class TraitTag(BaseModel):
+    """A short personality trait label with the handwriting cues behind it."""
+
+    label: str = Field(description="Trait label, e.g. 'Thoughtful' or 'Trust builder'.")
+    why: str = Field(default="", description="Observed handwriting cues that support this trait.")
 
 
 class DimensionScore(BaseModel):
@@ -123,6 +174,10 @@ class GraphologyReport(BaseModel):
     dimensions: list[DimensionScore] = Field(
         default_factory=list,
         description="The 7-dimension scored profile with evidence for each score.",
+    )
+    traits: list[TraitTag] = Field(
+        default_factory=list,
+        description="Personality trait tags supported by the observed handwriting cues.",
     )
     story: str = Field(
         default="",

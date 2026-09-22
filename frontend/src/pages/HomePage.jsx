@@ -466,7 +466,7 @@ const HomePage = () => {
           {/* Report */}
           {report && (
             <div className="flex flex-col gap-4">
-              <ReportCard report={report} />
+              <ReportCard report={report} sampleUrl={previewUrl} />
               <button
                 onClick={clearReport}
                 className="w-full py-3.5 rounded-xl text-sm font-medium transition-all duration-200"

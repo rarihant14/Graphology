@@ -6,7 +6,8 @@ import base64
 import logging
 
 from config import GEMINI_API_KEY, TEXT_MODEL
-from models import DimensionScore, GraphologyReport, HandwritingFeatures
+from models import DimensionScore, GraphologyReport, HandwritingFeatures, TraitTag
+from .trait_tags import compute_trait_tags
 from .dimension_scoring import (
     compute_confidence_note,
     compute_dimension_scores,
@@ -87,7 +88,10 @@ async def run_graphology_pipeline(image_bytes: bytes) -> GraphologyReport:
 
     # Step 7: Narrate the computed scores into one short story paragraph.
     logger.info("Step 5 — Generating narrative story.")
-    story = _generate_report_story(dimension_results, archetype, overall_score)
+    traits = compute_trait_tags(features_obj)
+    story = _generate_report_story(
+        dimension_results, archetype, overall_score, [t["label"] for t in traits]
+    )
 
     report = GraphologyReport(
         features=features_obj,
@@ -97,6 +101,7 @@ async def run_graphology_pipeline(image_bytes: bytes) -> GraphologyReport:
         archetype=archetype["name"],
         archetype_tagline=archetype["tagline"],
         dimensions=[DimensionScore(**result) for result in dimension_results],
+        traits=[TraitTag(**t) for t in traits],
         story=story,
         confidence_note=confidence_note,
     )

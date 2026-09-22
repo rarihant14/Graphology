@@ -15,8 +15,10 @@ export const setToken = (token) => {
 
 export const getToken = () => _token || localStorage.getItem("auth_token");
 
+export const API_URL = import.meta.env.VITE_API_URL || "https://graphology-846t.onrender.com";
+
 const client = axios.create({
-  baseURL: "https://graphology-846t.onrender.com",
+  baseURL: API_URL,
   timeout: 600000,
   headers: {
     "Content-Type": "application/json",
