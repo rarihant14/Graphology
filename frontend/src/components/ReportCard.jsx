@@ -19,12 +19,64 @@ const scoreColor = (score) => {
   return "#f87171";
 };
 
+const band = (s) => (s >= 70 ? "high" : s >= 40 ? "medium" : "low");
+const bandLabel = (s) => ({ high: "Strong", medium: "Developing", low: "Growth focus" })[band(s)];
+const titleCase = (k) => k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const FEATURE_GROUPS = [
+  ["Size, Slant and Baseline", ["letter_size", "slant", "baseline", "capital_size"]],
+  ["Pressure and Stroke", ["pressure", "stroke_quality", "writing_speed", "ending_strokes"]],
+  ["Spacing and Layout", ["letter_spacing", "word_spacing", "line_spacing", "margin_usage"]],
+  ["Form and Flow", ["connectivity", "letter_form", "regularity", "legibility"]],
+  ["Zones, Loops and Signature Marks", ["loop_style", "zone_emphasis", "t_bar_position", "t_bar_length", "i_dot"]],
+];
+
+const CORE_STYLE = {
+  emotional_balance: { high: "Caring + Steady", medium: "Adaptive + Responsive", low: "Intense + Honest" },
+  thinking_learning: { high: "Thoughtful + Analytical", medium: "Flexible + Practical", low: "Intuitive + Quick" },
+  health_vitality: { high: "Energetic + Active", medium: "Paced + Situational", low: "Reserved + Conserving" },
+  goals_achievement: { high: "Persistent + Planned", medium: "Steady + Adaptive", low: "Open + Exploring" },
+  relationships: { high: "Warm + Engaged", medium: "Measured + Selective", low: "Independent + Reserved" },
+  money_mindset: { high: "Grounded + Practical", medium: "Cautious + Security-minded", low: "Careful + Hesitant" },
+  personal_growth: { high: "Reflective + Structured", medium: "Aware + Searching", low: "Deep + Searching" },
+};
+
+const SectionLabel = ({ children }) => (
+  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>{children}</span>
+);
+
+const Panel = ({ children, style }) => (
+  <div
+    className="rounded-2xl p-5 flex flex-col gap-2"
+    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", ...style }}
+  >
+    {children}
+  </div>
+);
+
+const Section = ({ title, subtitle, children }) => (
+  <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-0.5">
+      <SectionLabel>{title}</SectionLabel>
+      {subtitle && <span className="text-xs" style={{ color: "#6b7280" }}>{subtitle}</span>}
+    </div>
+    {children}
+  </div>
+);
+
+const Bar = ({ score }) => (
+  <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: scoreColor(score) }} />
+  </div>
+);
+
 // ---------------------------------------------------------------------------
 // DimensionCard — one scored dimension with its supporting evidence
 // ---------------------------------------------------------------------------
 
 const DimensionCard = ({ dimension }) => {
   const color = scoreColor(dimension.score);
+  const coreStyle = CORE_STYLE[dimension.key]?.[band(dimension.score)];
 
   return (
     <div
@@ -48,9 +100,12 @@ const DimensionCard = ({ dimension }) => {
         </span>
         <span className="text-sm font-bold" style={{ color }}>
           {dimension.score}
-          <span style={{ color: "#6b7280", fontWeight: 400 }}>/100</span>
+          <span style={{ color: "#6b7280", fontWeight: 400 }}>/100 · {bandLabel(dimension.score)}</span>
         </span>
       </div>
+      {coreStyle && (
+        <span className="text-xs font-semibold" style={{ color: "#a78bfa" }}>Core style: {coreStyle}</span>
+      )}
 
       {/* Score bar */}
       <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
@@ -91,22 +146,34 @@ const DimensionCard = ({ dimension }) => {
           style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)" }}
         >
           <TrendingUp size={13} style={{ color: "#4ade80", flexShrink: 0, marginTop: "2px" }} />
-          <p className="text-xs leading-relaxed" style={{ color: "#a7c7b2" }}>{dimension.strength}</p>
+          <p className="text-xs leading-relaxed" style={{ color: "#a7c7b2" }}>
+            <b>Your strength: </b>{dimension.strength}
+          </p>
         </div>
         <div
           className="rounded-lg px-3 py-2 flex gap-2"
           style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.15)" }}
         >
           <AlertTriangle size={13} style={{ color: "#facc15", flexShrink: 0, marginTop: "2px" }} />
-          <p className="text-xs leading-relaxed" style={{ color: "#c9bd91" }}>{dimension.blind_spot}</p>
+          <p className="text-xs leading-relaxed" style={{ color: "#c9bd91" }}>
+            <b>Watch for: </b>{dimension.blind_spot}
+          </p>
         </div>
       </div>
 
       {/* Next move */}
       <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(124,58,237,0.07)" }}>
         <ArrowRight size={13} style={{ color: "#a78bfa", flexShrink: 0, marginTop: "2px" }} />
-        <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{dimension.next_move}</p>
+        <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+          <b>Mindful action: </b>{dimension.next_move}
+        </p>
       </div>
+
+      <p className="text-[11px] leading-relaxed" style={{ color: "#6b7280" }}>
+        {dimension.confidence === "high"
+          ? "Confidence: high — two or more clearly visible cues supported this score."
+          : "Confidence: low — fewer than two cues were clearly visible, so read this as a light indication."}
+      </p>
     </div>
   );
 };
@@ -124,6 +191,23 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   const dimensions = report?.dimensions ?? [];
   const overallScore = report?.overall_score ?? null;
   const overallColor = overallScore !== null ? scoreColor(overallScore) : "#a78bfa";
+
+  const features = report?.features ?? {};
+  const insights = report?.feature_insights ?? {};
+  const isKnown = (v) => v && String(v).toLowerCase() !== "unknown";
+  const observedCues = Object.entries(features).filter(([, v]) => isKnown(v));
+  const byScoreDesc = [...dimensions].sort((a, b) => b.score - a.score);
+  const byScoreAsc = [...dimensions].sort((a, b) => a.score - b.score);
+  const topDims = byScoreDesc.slice(0, 3);
+  const lowDims = byScoreAsc.slice(0, 3);
+  const traits = report?.traits ?? [];
+  const planTexts = [
+    lowDims[0] && `Focus on ${lowDims[0].label}. ${lowDims[0].next_move}`,
+    lowDims[1] && `Turn to ${lowDims[1].label}. ${lowDims[1].next_move}`,
+    lowDims[2] && `Build ${lowDims[2].label} into a routine. ${lowDims[2].next_move}`,
+    "Ask: what worked, what drained me, and what should I continue, stop or change? Keep the habits that helped and drop the rest.",
+  ].filter(Boolean);
+  const planLabels = ["Week 1 · Clarity", "Week 2 · Expression", "Week 3 · Momentum", "Week 4 · Review"];
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 50);
@@ -314,20 +398,103 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </div>
         )}
 
-        {/* Trait tags */}
-        {(report?.traits ?? []).length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {report.traits.map((t) => (
-              <span
-                key={t.label}
-                title={t.why ? `Seen in: ${t.why}` : undefined}
-                className="text-xs font-medium px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", color: "#c4b5fd" }}
-              >
-                {t.label}
-              </span>
+        {/* Begin with awareness */}
+        <Section title="Begin With Awareness" subtitle="This report turns handwriting observations into an easy-to-read self-reflection.">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              ["01 Observe", "Your handwriting contains visible patterns in size, spacing, slant, pressure, rhythm and letter formation."],
+              ["02 Reflect", "Graphology uses these patterns to suggest tendencies, not fixed truths or diagnoses."],
+              ["03 Apply", "The most useful part is what you can do with the insight: strengths to use and patterns to watch."],
+              ["04 Choose", "Keep what resonates with your lived experience. Treat the report as a conversation starter with yourself."],
+            ].map(([h, t]) => (
+              <Panel key={h} style={{ padding: "0.9rem 1rem", gap: "0.25rem" }}>
+                <span className="text-xs font-bold" style={{ color: "#c4b5fd" }}>{h}</span>
+                <span className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>{t}</span>
+              </Panel>
             ))}
           </div>
+          <Panel style={{ padding: "0.9rem 1rem" }}>
+            <span className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+              <b style={{ color: "#c4b5d4" }}>How to read your report: </b>
+              look at the combination of score + interpretation + evidence + practical action. A lower score is not a
+              flaw, and a higher score is not automatically a strength in every situation. Cues that could not be judged
+              are left out rather than guessed.
+            </span>
+          </Panel>
+        </Section>
+
+        {/* Your handwriting */}
+        {(sampleUrl || observedCues.length > 0) && (
+          <Section title="Your Handwriting" subtitle="The report is based on the patterns visible in your submitted writing sample.">
+            {sampleUrl && (
+              <img
+                src={sampleUrl}
+                alt="Your handwriting sample"
+                className="rounded-xl w-full"
+                style={{ maxHeight: "320px", objectFit: "contain", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              />
+            )}
+            {observedCues.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {observedCues.map(([k, v]) => (
+                  <span key={k} className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.04)", color: "#9ca3af" }}>
+                    <b style={{ color: "#c4b5d4" }}>{titleCase(k)}:</b> {v}
+                  </span>
+                ))}
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* Profile snapshot */}
+        {dimensions.length > 0 && (
+          <Section title="Your Profile Snapshot" subtitle="Your seven-dimension profile at a glance.">
+            <Panel style={{ gap: "0.7rem" }}>
+              {dimensions.map((d) => (
+                <div key={d.key} className="flex items-center gap-3">
+                  <span className="text-xs w-36 flex-shrink-0" style={{ color: "#c4b5d4" }}>{d.label}</span>
+                  <div className="flex-1"><Bar score={d.score} /></div>
+                  <span className="text-xs w-24 text-right flex-shrink-0" style={{ color: scoreColor(d.score) }}>
+                    <b>{d.score}</b> <span style={{ color: "#6b7280" }}>{bandLabel(d.score)}</span>
+                  </span>
+                </div>
+              ))}
+            </Panel>
+            <p className="text-xs" style={{ color: "#9ca3af" }}>
+              <b style={{ color: "#4ade80" }}>Strongest area:</b> {byScoreDesc[0].label} ({byScoreDesc[0].score}) &nbsp;|&nbsp;{" "}
+              <b style={{ color: "#facc15" }}>Growth focus:</b> {byScoreAsc[0].label} ({byScoreAsc[0].score})
+            </p>
+          </Section>
+        )}
+
+        {/* Personality dashboard: trait tags with reasons */}
+        {traits.length > 0 && (
+          <Section title="Your Personality Dashboard" subtitle="A more human way to read your profile, beyond the numbers.">
+            <div className="flex flex-wrap gap-2">
+              {traits.map((t) => (
+                <span
+                  key={t.label}
+                  title={t.why ? `Seen in: ${t.why}` : undefined}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full"
+                  style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", color: "#c4b5fd" }}
+                >
+                  {t.label}
+                </span>
+              ))}
+            </div>
+            <ul className="flex flex-col gap-1" style={{ paddingLeft: "1.1rem" }}>
+              {traits.filter((t) => t.why).map((t) => (
+                <li key={t.label} className="text-xs leading-relaxed" style={{ color: "#9ca3af", listStyleType: "disc" }}>
+                  <b style={{ color: "#c4b5d4" }}>{t.label}</b> — seen in {t.why}
+                </li>
+              ))}
+            </ul>
+            <Panel style={{ background: "rgba(124,58,237,0.07)" }}>
+              <p className="text-sm text-center italic" style={{ color: "#c4b5fd", fontFamily: "'Georgia', serif" }}>
+                Your profile in one line: {traits.slice(0, 3).map((t) => t.label.toLowerCase()).join(" + ")}.
+              </p>
+            </Panel>
+          </Section>
         )}
 
         {/* Story / narrative summary */}
@@ -340,24 +507,113 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </p>
         )}
 
+        {/* X-Factor */}
+        {topDims.length > 0 && (
+          <Section title="Know Your X-Factor" subtitle="Your strongest dimensions and what they can look like in everyday life.">
+            {topDims.map((d) => (
+              <Panel key={d.key}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold" style={{ color: "#e5e7eb", fontFamily: "'Georgia', serif" }}>{d.label}</span>
+                  <span className="text-sm font-bold" style={{ color: scoreColor(d.score) }}>{d.score}</span>
+                </div>
+                <Bar score={d.score} />
+                <p className="text-xs leading-relaxed mt-1" style={{ color: "#c4b5d4" }}>
+                  <b style={{ color: "#a78bfa" }}>What your profile suggests: </b>{d.essence}
+                </p>
+                <p className="text-xs leading-relaxed" style={{ color: "#a7c7b2" }}>
+                  <b style={{ color: "#4ade80" }}>Make it useful: </b>{d.strength}
+                </p>
+              </Panel>
+            ))}
+          </Section>
+        )}
+
         {/* Dimension cards */}
         {dimensions.length > 0 && (
-          <div className="flex flex-col gap-3">
-            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
-              Your Profile
-            </span>
+          <Section title="Your Profile in Detail">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {dimensions.map((d) => (
                 <DimensionCard key={d.key} dimension={d} />
               ))}
             </div>
-          </div>
+          </Section>
         )}
+
+        {/* Feature breakdown */}
+        {observedCues.length > 0 && (
+          <Section title="Handwriting Feature Breakdown" subtitle="Every cue examined in your sample, what was observed, and what it may suggest.">
+            {FEATURE_GROUPS.map(([group, keys]) => (
+              <Panel key={group} style={{ padding: "0.9rem 1rem", gap: "0.6rem" }}>
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>{group}</span>
+                {keys.map((k) => {
+                  const v = features[k];
+                  return (
+                    <div key={k} className="grid grid-cols-1 sm:grid-cols-[9rem_7rem_1fr] gap-x-3 gap-y-0.5 text-xs leading-relaxed"
+                      style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "0.5rem" }}>
+                      <b style={{ color: isKnown(v) ? "#e5e7eb" : "#6b7280" }}>{titleCase(k)}</b>
+                      <span style={{ color: isKnown(v) ? "#c4b5fd" : "#6b7280" }}>{isKnown(v) ? v : "Not observed"}</span>
+                      <span style={{ color: "#9ca3af" }}>
+                        {isKnown(v)
+                          ? insights[k] || ""
+                          : "Not clearly visible in this sample, so it was not scored."}
+                      </span>
+                    </div>
+                  );
+                })}
+              </Panel>
+            ))}
+          </Section>
+        )}
+
+        {/* 30-day growth plan */}
+        {lowDims.length > 0 && (
+          <Section title="Your 30-Day Growth Plan" subtitle="Turn the report into a small experiment, not a label.">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {planTexts.map((t, i) => (
+                <Panel key={i} style={{ padding: "0.9rem 1rem", gap: "0.3rem" }}>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>{planLabels[i]}</span>
+                  <span className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{t}</span>
+                </Panel>
+              ))}
+            </div>
+            <Panel style={{ padding: "0.9rem 1rem" }}>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>
+                Growth loop for {lowDims[0].label}
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+                {[
+                  ["1 Reflect", "What matters most right now?"],
+                  ["2 Choose", "What is one action within my control?"],
+                  ["3 Repeat", "What can I practise weekly?"],
+                  ["4 Review", "What changed after 30 days?"],
+                ].map(([h, t]) => (
+                  <div key={h} className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+                    <b style={{ color: "#c4b5d4" }}>{h}</b><br />{t}
+                  </div>
+                ))}
+              </div>
+            </Panel>
+            <p className="text-sm text-center italic" style={{ color: "#c4b5fd", fontFamily: "'Georgia', serif" }}>
+              The goal is not to fix yourself. It is to test which insights genuinely help you live and work better.
+            </p>
+          </Section>
+        )}
+
+        {/* Takeaway */}
+        <Panel style={{ background: "rgba(124,58,237,0.07)" }}>
+          <SectionLabel>The Takeaway</SectionLabel>
+          <p className="text-sm leading-relaxed" style={{ color: "#c4b5d4" }}>
+            You do not need to become a different person. The most useful shift may be to turn your existing strengths
+            into clearer decisions, stronger boundaries and consistent action.
+          </p>
+        </Panel>
 
         {/* Disclaimer */}
         <div className="rounded-xl px-4 py-3 flex gap-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
           <ShieldAlert size={14} style={{ color: "#4b5563", flexShrink: 0, marginTop: "2px" }} strokeWidth={1.8} />
-          <p className="text-xs leading-relaxed" style={{ color: "#4b5563" }}>{report?.disclaimer}</p>
+          <p className="text-xs leading-relaxed" style={{ color: "#4b5563" }}>
+            {report?.disclaimer} This report is not financial, medical, legal or psychological advice.
+          </p>
         </div>
       </div>
 

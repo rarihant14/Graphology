@@ -179,6 +179,10 @@ class GraphologyReport(BaseModel):
         default_factory=list,
         description="Personality trait tags supported by the observed handwriting cues.",
     )
+    feature_insights: dict[str, str] = Field(
+        default_factory=dict,
+        description="Rule-engine interpretation per observed feature, for the feature breakdown.",
+    )
     story: str = Field(
         default="",
         description="Short narrative paragraph tying the dimension scores together.",

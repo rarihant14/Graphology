@@ -102,6 +102,7 @@ async def run_graphology_pipeline(image_bytes: bytes) -> GraphologyReport:
         archetype_tagline=archetype["tagline"],
         dimensions=[DimensionScore(**result) for result in dimension_results],
         traits=[TraitTag(**t) for t in traits],
+        feature_insights={k: str(v) for k, v in interpretations.items()},
         story=story,
         confidence_note=confidence_note,
     )
