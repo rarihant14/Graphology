@@ -120,13 +120,13 @@ const DimensionCard = ({ dimension }) => {
         {dimension.essence}
       </p>
 
-      {/* Why we see it */}
+      {/* What We are Seeing */}
       {dimension.evidence?.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
             <Info size={12} style={{ color: "#7c3aed" }} strokeWidth={2} />
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
-              Why we see it
+              What We are Seeing
             </span>
           </div>
           <ul className="flex flex-col gap-1" style={{ paddingLeft: "1.1rem" }}>
