@@ -201,6 +201,10 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   const topDims = byScoreDesc.slice(0, 3);
   const lowDims = byScoreAsc.slice(0, 3);
   const traits = report?.traits ?? [];
+  const topStrengths = byScoreDesc.slice(0, 5);
+  const potentialBlindSpots = byScoreDesc.slice(0, 5);
+  const methodCueCount = Object.values(features).filter(isKnown).length;
+  const methodCueTotal = Object.keys(features).length;
   const planTexts = [
     lowDims[0] && `Focus on ${lowDims[0].label}. ${lowDims[0].next_move}`,
     lowDims[1] && `Turn to ${lowDims[1].label}. ${lowDims[1].next_move}`,
@@ -271,7 +275,15 @@ const ReportCard = ({ report, sampleUrl = null }) => {
       ((report?.traits ?? []).length ? `Traits: ${report.traits.map((t) => t.label).join(", ")}\n` : "") +
       "\n" +
       (report?.story ? `${report.story}\n\n` : `${report?.personality_traits ?? ""}\n\n`) +
+      `${"─".repeat(40)}\nTOP 5 STRENGTHS\n${"─".repeat(40)}\n` +
+      `${topStrengths.map((d, i) => `${i + 1}. ${d.label}: ${d.strength}`).join("\n")}\n\n` +
+      `${"─".repeat(40)}\nPOTENTIAL BLIND SPOTS\n${"─".repeat(40)}\n` +
+      `${potentialBlindSpots.map((d) => `${d.label}: ${d.blind_spot}`).join("\n")}\n\n` +
+      `${"─".repeat(40)}\nYOU MAY BE SOMEONE WHO\n${"─".repeat(40)}\n` +
+      `${traits.slice(0, 5).map((t) => `You may be someone who is ${t.label.toLowerCase()}.`).join("\n")}\n\n` +
       `${"─".repeat(40)}\nDIMENSIONS\n${"─".repeat(40)}\n\n${dimensionText}\n` +
+      `${"─".repeat(40)}\nMETHOD + CONFIDENCE\n${"─".repeat(40)}\n` +
+      `${report?.confidence_note ?? ""}\nScores with fewer than two supporting cues are light indications, not firm conclusions.\n\n` +
       `${"─".repeat(40)}\nDISCLAIMER\n${report?.disclaimer ?? ""}`;
 
     try {
@@ -497,6 +509,53 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </Section>
         )}
 
+        {/* Requested reflection sections */}
+        {topStrengths.length > 0 && (
+          <Section title="Top 5 Strengths" subtitle="The strongest patterns in your current profile and how they may help you.">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {topStrengths.map((d, i) => (
+                <Panel key={d.key} style={{ padding: "0.9rem 1rem", gap: "0.35rem" }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-bold" style={{ color: "#c4b5fd" }}>{i + 1}. {d.label}</span>
+                    <span className="text-xs font-bold" style={{ color: scoreColor(d.score) }}>{d.score}</span>
+                  </div>
+                  <span className="text-xs leading-relaxed" style={{ color: "#a7c7b2" }}>{d.strength}</span>
+                </Panel>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {potentialBlindSpots.length > 0 && (
+          <Section title="Potential Blind Spots" subtitle="Patterns worth noticing when a strength is overused or under-supported.">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {potentialBlindSpots.map((d) => (
+                <Panel key={d.key} style={{ padding: "0.9rem 1rem", gap: "0.35rem", background: "rgba(250,204,21,0.04)", border: "1px solid rgba(250,204,21,0.12)" }}>
+                  <span className="text-xs font-bold" style={{ color: "#facc15" }}>{d.label}</span>
+                  <span className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{d.blind_spot}</span>
+                </Panel>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {(report?.archetype || traits.length > 0) && (
+          <Section title="You May Be Someone Who" subtitle="A tentative reflection, not a fixed label.">
+            <Panel style={{ background: "rgba(124,58,237,0.07)", gap: "0.55rem" }}>
+              {report?.archetype && (
+                <p className="text-sm leading-relaxed" style={{ color: "#c4b5fd", fontFamily: "'Georgia', serif" }}>
+                  You may be someone who reflects the {report.archetype.toLowerCase()} pattern — {report.archetype_tagline?.toLowerCase()}
+                </p>
+              )}
+              {traits.slice(0, 5).map((t) => (
+                <p key={t.label} className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+                  <b style={{ color: "#e5e7eb" }}>You may be someone who is {t.label.toLowerCase()}.</b>{t.why ? ` This is associated with ${t.why}.` : ""}
+                </p>
+              ))}
+            </Panel>
+          </Section>
+        )}
+
         {/* Story / narrative summary */}
         {(report?.story || report?.personality_traits) && (
           <p
@@ -598,6 +657,22 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             </p>
           </Section>
         )}
+
+        <Section title="Method + Confidence" subtitle="How to use the report responsibly.">
+          <Panel style={{ gap: "0.55rem" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+              <b style={{ color: "#c4b5fd" }}>Method: </b>
+              handwriting cues are extracted from the uploaded sample, mapped through the app's rule-based interpretations, and combined into seven dimension scores. The narrative language is generated from those observed cues and scores.
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+              <b style={{ color: "#c4b5fd" }}>Confidence: </b>
+              {report?.confidence_note || `${methodCueCount} of ${methodCueTotal} handwriting cues were clearly observable in your sample.`} Scores with fewer than two supporting cues are light indications, not firm conclusions.
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+              Graphology is not a scientifically validated personality assessment. Keep what resonates, question what does not, and use this report for reflection rather than diagnosis or high-stakes decisions.
+            </p>
+          </Panel>
+        </Section>
 
         {/* Takeaway */}
         <Panel style={{ background: "rgba(124,58,237,0.07)" }}>

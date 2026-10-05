@@ -351,6 +351,69 @@ def _xfactor(report: GraphologyReport):
     return items
 
 
+def _reflection_sections(report: GraphologyReport):
+    ranked = sorted(report.dimensions, key=lambda d: d.score, reverse=True)
+    top = ranked[:5]
+    items = []
+
+    items += _section_title(
+        "Top 5 Strengths",
+        "The strongest patterns in your current profile and how they may help you.",
+    )
+    for index, d in enumerate(top, 1):
+        items.append(_panel([
+            Paragraph(f"<b>{index}. {_esc(d.label)}</b> &nbsp; <font color='#6d28d9'>{d.score}</font>", S["body"]),
+            Paragraph(_esc(d.strength), S["body"]),
+        ], bg=colors.HexColor("#f8f5ff")))
+        items.append(Spacer(1, 5))
+
+    items += _section_title(
+        "Potential Blind Spots",
+        "Patterns worth noticing when a strength is overused or under-supported.",
+    )
+    for d in top:
+        items.append(_panel([
+            Paragraph(f"<b>{_esc(d.label)}</b>", S["body"]),
+            Paragraph(_esc(d.blind_spot), S["body"]),
+        ], bg=colors.HexColor("#fffdf2")))
+        items.append(Spacer(1, 5))
+
+    items += _section_title("You May Be Someone Who", "A tentative reflection, not a fixed label.")
+    lines = []
+    if report.archetype:
+        lines.append(
+            f"You may be someone who reflects the {_esc(report.archetype.lower())} pattern - "
+            f"{_esc((report.archetype_tagline or '').lower())}"
+        )
+    lines.extend(
+        f"You may be someone who is {_esc(t.label.lower())}."
+        for t in report.traits[:5]
+    )
+    items.append(_panel([Paragraph(line, S["body"]) for line in lines], bg=colors.HexColor("#f8f5ff")))
+    items.append(PageBreak())
+
+    items += _section_title("Method + Confidence", "How to use the report responsibly.")
+    observed = sum(
+        1 for value in report.features.model_dump().values()
+        if value and str(value).lower() != "unknown"
+    )
+    total = len(report.features.model_fields)
+    items.append(_panel([
+        Paragraph(
+            "<b>Method:</b> Handwriting cues are extracted from the uploaded sample, mapped "
+            "through rule-based interpretations, and combined into seven dimension scores. "
+            "The narrative language is generated from those observed cues and scores.", S["body"]),
+        Paragraph(
+            f"<b>Confidence:</b> {_esc(report.confidence_note or f'{observed} of {total} handwriting cues were clearly observable in your sample.')} "
+            "Scores with fewer than two supporting cues are light indications, not firm conclusions.", S["body"]),
+        Paragraph(
+            "Graphology is not a scientifically validated personality assessment. Use this report "
+            "for reflection rather than diagnosis or high-stakes decisions.", S["small"]),
+    ]))
+    items.append(PageBreak())
+    return items
+
+
 def _dimension_pages(report: GraphologyReport):
     items = []
     for d in report.dimensions:
@@ -488,6 +551,7 @@ def build_report_pdf(report: GraphologyReport, name: str = "", image_b64: str | 
         *_snapshot(report),
         *_dashboard(report),
         *_xfactor(report),
+        *_reflection_sections(report),
         *_dimension_pages(report),
         *_feature_breakdown(report),
         *_growth_plan(report),
