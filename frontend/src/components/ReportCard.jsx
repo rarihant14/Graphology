@@ -161,11 +161,19 @@ const DimensionCard = ({ dimension }) => {
         </div>
       </div>
 
+      {/* Make it useful */}
+      <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)" }}>
+        <TrendingUp size={13} style={{ color: "#4ade80", flexShrink: 0, marginTop: "2px" }} />
+        <p className="text-xs leading-relaxed" style={{ color: "#a7c7b2" }}>
+          <b>Make it useful: </b>{dimension.strength}
+        </p>
+      </div>
+
       {/* Next move */}
       <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(124,58,237,0.07)" }}>
         <ArrowRight size={13} style={{ color: "#a78bfa", flexShrink: 0, marginTop: "2px" }} />
         <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
-          <b>Mindful action: </b>{dimension.next_move}
+          <b>Your Next Step: </b>{dimension.next_move}
         </p>
       </div>
 
@@ -262,9 +270,10 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         `${d.label} — ${d.score}/100\n` +
         `${d.essence}\n` +
         `Why: ${(d.evidence || []).join(" ")}\n` +
+        `Make it useful: ${d.strength}\n` +
         `Strength: ${d.strength}\n` +
         `Watch for: ${d.blind_spot}\n` +
-        `Next move: ${d.next_move}\n`
+        `Your Next Step: ${d.next_move}\n`
       )
       .join("\n");
 

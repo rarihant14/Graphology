@@ -426,7 +426,8 @@ def _dimension_pages(report: GraphologyReport):
             *_labeled("Your essence", d.essence),
             *_labeled("Your strength", d.strength),
             *_labeled("Watch for", d.blind_spot),
-            *_labeled("Mindful action", d.next_move),
+            *_labeled("Make it useful", d.strength),
+            *_labeled("Your Next Step", d.next_move),
             Paragraph("CORE STYLE", S["h2"]),
             Paragraph(f"<b>{CORE_STYLE.get(d.key, {}).get(band, '')}</b>", S["body"]),
         ]
