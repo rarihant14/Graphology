@@ -68,6 +68,11 @@ def _score_color(score: int):
     return GREEN if score >= 70 else AMBER if score >= 40 else RED
 
 
+def _visible_dimensions(report: GraphologyReport):
+    """Keep legacy reports from showing the removed Personal & Inner Growth section."""
+    return [d for d in report.dimensions if d.key != "personal_growth"]
+
+
 def _esc(text: str) -> str:
     return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -265,7 +270,7 @@ def _handwriting_page(report: GraphologyReport, image_b64: str | None):
 
 
 def _snapshot(report: GraphologyReport):
-    dims = report.dimensions
+    dims = _visible_dimensions(report)
     rows = []
     for d in dims:
         rows.append([
@@ -279,8 +284,16 @@ def _snapshot(report: GraphologyReport):
         ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
         ("LINEBELOW", (0, 0), (-1, -2), 0.4, LINE),
     ]))
-    items = _section_title("Your Profile Snapshot", "Your seven-dimension profile at a glance.")
+    items = _section_title("Your Profile Snapshot", "Your six-dimension profile at a glance.")
     items.append(t)
+    legend = Table([[
+        Paragraph("LEGEND", S["h2"]),
+        Paragraph("● Strong 70–100", S["small"]),
+        Paragraph("● Developing 40–69", S["small"]),
+        Paragraph("● Growth focus 0–39", S["small"]),
+    ]], colWidths=[CONTENT_W * 0.18, CONTENT_W * 0.27, CONTENT_W * 0.29, CONTENT_W * 0.26])
+    legend.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f9fafb")), ("BOX", (0, 0), (-1, -1), 0.5, LINE), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]))
+    items += [Spacer(1, 8), legend]
     items.append(Spacer(1, 14))
     items.append(_panel([
         Paragraph("OVERALL LIFE ALIGNMENT QUOTIENT", S["h2"]),
@@ -335,7 +348,7 @@ def _dashboard(report: GraphologyReport):
 
 
 def _xfactor(report: GraphologyReport):
-    top = sorted(report.dimensions, key=lambda d: d.score, reverse=True)[:3]
+    top = sorted(_visible_dimensions(report), key=lambda d: d.score, reverse=True)[:3]
     items = _section_title("Know Your X-Factor",
                            "Your strongest dimensions and what they can look like in everyday life.")
     for d in top:
@@ -352,15 +365,15 @@ def _xfactor(report: GraphologyReport):
 
 
 def _reflection_sections(report: GraphologyReport):
-    ranked = sorted(report.dimensions, key=lambda d: d.score, reverse=True)
+    ranked = sorted(_visible_dimensions(report), key=lambda d: d.score, reverse=True)
     top = ranked[:5]
     items = []
 
     items += _section_title(
-        "Top 5 Strengths",
+        "Top 3 Strengths",
         "The strongest patterns in your current profile and how they may help you.",
     )
-    for index, d in enumerate(top, 1):
+    for index, d in enumerate(ranked[:3], 1):
         items.append(_panel([
             Paragraph(f"<b>{index}. {_esc(d.label)}</b> &nbsp; <font color='#6d28d9'>{d.score}</font>", S["body"]),
             Paragraph(_esc(d.strength), S["body"]),
@@ -401,7 +414,7 @@ def _reflection_sections(report: GraphologyReport):
     items.append(_panel([
         Paragraph(
             "<b>Method:</b> Handwriting cues are extracted from the uploaded sample, mapped "
-            "through rule-based interpretations, and combined into seven dimension scores. "
+            "through rule-based interpretations, and combined into six dimension scores. "
             "The narrative language is generated from those observed cues and scores.", S["body"]),
         Paragraph(
             f"<b>Confidence:</b> {_esc(report.confidence_note or f'{observed} of {total} handwriting cues were clearly observable in your sample.')} "
@@ -416,7 +429,7 @@ def _reflection_sections(report: GraphologyReport):
 
 def _dimension_pages(report: GraphologyReport):
     items = []
-    for d in report.dimensions:
+    for d in _visible_dimensions(report):
         band = _band(d.score)
         head = [
             *_section_title(f"Your {d.label}", f"{d.score} / 100  -  {_band_label(d.score)}"),
@@ -519,6 +532,26 @@ def _story_and_close(report: GraphologyReport):
     for para in (report.story or report.personality_traits or "").split("\n\n"):
         if para.strip():
             items.append(Paragraph(_esc(para.strip()), S["body"]))
+    dims = _visible_dimensions(report)
+    ranked = sorted(dims, key=lambda d: d.score, reverse=True)
+    strengths = ", ".join(d.label for d in ranked[:3]) or "your individual strengths"
+    developing = ranked[-1].label if ranked else "your developing areas"
+    traits = ", ".join(t.label.lower() for t in report.traits[:3]) or "individual strengths"
+    items += [Spacer(1, 12), *_section_title(
+        "Yr Pattern", "The recurring rhythm across the strongest and most developing areas of your profile.")]
+    items.append(_panel([
+        Paragraph(f"Your profile is led by <b>{_esc(strengths)}</b>. These may be your natural operating strengths, while <b>{_esc(developing)}</b> is the area to watch when you want more balance.", S["body"])
+    ], bg=colors.HexColor("#f8f5ff")))
+    items += [Spacer(1, 10), *_section_title("Overall Conclusion", "A concise reading of the report as a whole.")]
+    items.append(_panel([Paragraph(
+        f"Overall, your handwriting profile points to a person with a distinct mix of {_esc(traits)}. Your best results are likely to come from using those strengths deliberately, then taking one practical step in {_esc(developing)}.", S["body"])
+    ], bg=colors.HexColor("#f3faf5")))
+    items += [Spacer(1, 10), *_section_title("Yr Next Steps", "Areas of Improvement")]
+    areas = ["Decision Making", "Desires", "Goals", "Thinking Patterns", "Interpersonal Relations", "Fears and Defenses", "Self-destructive Traits"]
+    rows = [[Paragraph(f"<b>{i + 1:02d}</b>", S["cellb"]), Paragraph(_esc(area), S["body"])] for i, area in enumerate(areas)]
+    steps = Table(rows, colWidths=[CONTENT_W * 0.12, CONTENT_W * 0.88])
+    steps.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f9fafb")), ("INNERGRID", (0, 0), (-1, -1), 0.35, LINE), ("BOX", (0, 0), (-1, -1), 0.5, LINE), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
+    items.append(steps)
     items += [Spacer(1, 10), _panel([
         Paragraph("THE TAKEAWAY", S["h2"]),
         Paragraph("You do not need to become a different person. The most useful shift may be to turn "

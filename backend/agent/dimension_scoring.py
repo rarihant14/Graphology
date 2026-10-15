@@ -292,6 +292,9 @@ def compute_dimension_scores(
     results: list[dict] = []
 
     for dimension_key, feature_rules in DIMENSION_RULES.items():
+        # Personal & Inner Growth is intentionally omitted from the user-facing report.
+        if dimension_key == "personal_growth":
+            continue
         sub_scores: list[int] = []
         evidence: list[str] = []
 
@@ -335,7 +338,7 @@ def compute_overall_score(dimension_results: list[dict]) -> int:
 
 def pick_archetype(dimension_results: list[dict]) -> dict:
     if not dimension_results:
-        key = "personal_growth"
+        key = "emotional_balance"
     else:
         key = max(dimension_results, key=lambda r: r["score"])["key"]
 
