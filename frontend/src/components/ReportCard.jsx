@@ -21,6 +21,7 @@ const scoreColor = (score) => {
 
 const band = (s) => (s >= 70 ? "high" : s >= 40 ? "medium" : "low");
 const bandLabel = (s) => ({ high: "Strong", medium: "Developing", low: "Growth focus" })[band(s)];
+const titleCase = (k) => k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const CORE_STYLE = {
   emotional_balance: { high: "Caring + Steady", medium: "Adaptive + Responsive", low: "Intense + Honest" },
   thinking_learning: { high: "Thoughtful + Analytical", medium: "Flexible + Practical", low: "Intuitive + Quick" },
@@ -193,6 +194,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
 
   const features = report?.features ?? {};
   const isKnown = (v) => v && String(v).toLowerCase() !== "unknown";
+  const observedCues = Object.entries(features).filter(([, v]) => isKnown(v));
   const byScoreDesc = [...dimensions].sort((a, b) => b.score - a.score);
   const byScoreAsc = [...dimensions].sort((a, b) => a.score - b.score);
   const topDims = byScoreDesc.slice(0, 3);
