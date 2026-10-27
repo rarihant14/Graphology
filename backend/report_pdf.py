@@ -20,7 +20,6 @@ from reportlab.platypus import (
     Spacer, Table, TableStyle,
 )
 
-from agent.rule_engine import apply_rules
 from models import GraphologyReport
 
 PURPLE = colors.HexColor("#6d28d9")
@@ -35,15 +34,6 @@ RED = colors.HexColor("#dc2626")
 PAGE_W, PAGE_H = A4
 MARGIN = 20 * mm
 CONTENT_W = PAGE_W - 2 * MARGIN
-
-# Feature display grouping for the detailed breakdown table.
-FEATURE_GROUPS: list[tuple[str, list[str]]] = [
-    ("Size, Slant and Baseline", ["letter_size", "slant", "baseline", "capital_size"]),
-    ("Pressure and Stroke", ["pressure", "stroke_quality", "writing_speed", "ending_strokes"]),
-    ("Spacing and Layout", ["letter_spacing", "word_spacing", "line_spacing", "margin_usage"]),
-    ("Form and Flow", ["connectivity", "letter_form", "regularity", "legibility"]),
-    ("Zones, Loops and Signature Marks", ["loop_style", "zone_emphasis", "t_bar_position", "t_bar_length", "i_dot"]),
-]
 
 CORE_STYLE: dict[str, dict[str, str]] = {
     "emotional_balance": {"high": "Caring + Steady", "medium": "Adaptive + Responsive", "low": "Intense + Honest"},
@@ -463,36 +453,6 @@ def _dimension_pages(report: GraphologyReport):
     return items
 
 
-def _feature_breakdown(report: GraphologyReport):
-    interp = apply_rules(report.features)
-    items = _section_title(
-        "Handwriting Feature Breakdown",
-        "Every cue examined in your sample, what was observed, and what it may suggest.")
-    for group, keys in FEATURE_GROUPS:
-        rows = [[Paragraph("Feature", S["cellb"]), Paragraph("Observed", S["cellb"]),
-                 Paragraph("What it may suggest", S["cellb"])]]
-        for k in keys:
-            val = (getattr(report.features, k, "unknown") or "unknown")
-            if val.lower() == "unknown":
-                rows.append([Paragraph(k.replace("_", " ").title(), S["cell"]),
-                             Paragraph("Not observed", S["small"]),
-                             Paragraph("Not clearly visible in this sample, so it was not scored.", S["small"])])
-            else:
-                rows.append([Paragraph(k.replace("_", " ").title(), S["cellb"]),
-                             Paragraph(_esc(val), S["cell"]),
-                             Paragraph(_esc(interp.get(k, "")), S["cell"])])
-        t = Table(rows, colWidths=[CONTENT_W * 0.22, CONTENT_W * 0.18, CONTENT_W * 0.60], repeatRows=1)
-        t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), PURPLE_LIGHT),
-            ("INNERGRID", (0, 0), (-1, -1), 0.3, LINE), ("BOX", (0, 0), (-1, -1), 0.5, LINE),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
-        items.append(KeepTogether([Paragraph(group.upper(), S["h2"]), t, Spacer(1, 8)]))
-    items.append(PageBreak())
-    return items
-
-
 def _growth_plan(report: GraphologyReport):
     dims = sorted(report.dimensions, key=lambda d: d.score)
     lowest = dims[:3]
@@ -538,7 +498,7 @@ def _story_and_close(report: GraphologyReport):
     developing = ranked[-1].label if ranked else "your developing areas"
     traits = ", ".join(t.label.lower() for t in report.traits[:3]) or "individual strengths"
     items += [Spacer(1, 12), *_section_title(
-        "Yr Pattern", "The recurring rhythm across the strongest and most developing areas of your profile.")]
+        "Your Pattern", "The recurring rhythm across the strongest and most developing areas of your profile.")]
     items.append(_panel([
         Paragraph(f"Your profile is led by <b>{_esc(strengths)}</b>. These may be your natural operating strengths, while <b>{_esc(developing)}</b> is the area to watch when you want more balance.", S["body"])
     ], bg=colors.HexColor("#f8f5ff")))
@@ -546,23 +506,18 @@ def _story_and_close(report: GraphologyReport):
     items.append(_panel([Paragraph(
         f"Overall, your handwriting profile points to a person with a distinct mix of {_esc(traits)}. Your best results are likely to come from using those strengths deliberately, then taking one practical step in {_esc(developing)}.", S["body"])
     ], bg=colors.HexColor("#f3faf5")))
-    items += [Spacer(1, 10), *_section_title("Yr Next Steps", "Areas of Improvement")]
-    areas = ["Decision Making", "Desires", "Goals", "Thinking Patterns", "Interpersonal Relations", "Fears and Defenses", "Self-destructive Traits"]
-    rows = [[Paragraph(f"<b>{i + 1:02d}</b>", S["cellb"]), Paragraph(_esc(area), S["body"])] for i, area in enumerate(areas)]
-    steps = Table(rows, colWidths=[CONTENT_W * 0.12, CONTENT_W * 0.88])
-    steps.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f9fafb")), ("INNERGRID", (0, 0), (-1, -1), 0.35, LINE), ("BOX", (0, 0), (-1, -1), 0.5, LINE), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
-    items.append(steps)
-    items += [Spacer(1, 10), _panel([
-        Paragraph("THE TAKEAWAY", S["h2"]),
-        Paragraph("You do not need to become a different person. The most useful shift may be to turn "
-                  "your existing strengths into clearer decisions, stronger boundaries and consistent action.",
-                  S["body"])]),
-        Spacer(1, 14),
+    items += [Spacer(1, 14),
         Paragraph("DISCLAIMER", S["h2"]),
         Paragraph(_esc(report.disclaimer), S["small"]),
         Spacer(1, 6),
         Paragraph("This report is not financial, medical, legal or psychological advice.", S["small"]),
     ]
+    items += [Spacer(1, 10), *_section_title("Your Next Steps", "Areas of Improvement")]
+    areas = ["Decision Making", "Desires", "Goals", "Thinking Patterns", "Interpersonal Relations", "Fears and Defenses", "Self-destructive Traits"]
+    rows = [[Paragraph(f"<b>{i + 1:02d}</b>", S["cellb"]), Paragraph(_esc(area), S["body"])] for i, area in enumerate(areas)]
+    steps = Table(rows, colWidths=[CONTENT_W * 0.12, CONTENT_W * 0.88])
+    steps.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f9fafb")), ("INNERGRID", (0, 0), (-1, -1), 0.35, LINE), ("BOX", (0, 0), (-1, -1), 0.5, LINE), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
+    items.append(steps)
     return items
 
 
@@ -587,7 +542,6 @@ def build_report_pdf(report: GraphologyReport, name: str = "", image_b64: str | 
         *_xfactor(report),
         *_reflection_sections(report),
         *_dimension_pages(report),
-        *_feature_breakdown(report),
         *_growth_plan(report),
         *_story_and_close(report),
     ]

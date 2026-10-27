@@ -21,16 +21,6 @@ const scoreColor = (score) => {
 
 const band = (s) => (s >= 70 ? "high" : s >= 40 ? "medium" : "low");
 const bandLabel = (s) => ({ high: "Strong", medium: "Developing", low: "Growth focus" })[band(s)];
-const titleCase = (k) => k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-const FEATURE_GROUPS = [
-  ["Size, Slant and Baseline", ["letter_size", "slant", "baseline", "capital_size"]],
-  ["Pressure and Stroke", ["pressure", "stroke_quality", "writing_speed", "ending_strokes"]],
-  ["Spacing and Layout", ["letter_spacing", "word_spacing", "line_spacing", "margin_usage"]],
-  ["Form and Flow", ["connectivity", "letter_form", "regularity", "legibility"]],
-  ["Zones, Loops and Signature Marks", ["loop_style", "zone_emphasis", "t_bar_position", "t_bar_length", "i_dot"]],
-];
-
 const CORE_STYLE = {
   emotional_balance: { high: "Caring + Steady", medium: "Adaptive + Responsive", low: "Intense + Honest" },
   thinking_learning: { high: "Thoughtful + Analytical", medium: "Flexible + Practical", low: "Intuitive + Quick" },
@@ -202,9 +192,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   const overallColor = overallScore !== null ? scoreColor(overallScore) : "#a78bfa";
 
   const features = report?.features ?? {};
-  const insights = report?.feature_insights ?? {};
   const isKnown = (v) => v && String(v).toLowerCase() !== "unknown";
-  const observedCues = Object.entries(features).filter(([, v]) => isKnown(v));
   const byScoreDesc = [...dimensions].sort((a, b) => b.score - a.score);
   const byScoreAsc = [...dimensions].sort((a, b) => a.score - b.score);
   const topDims = byScoreDesc.slice(0, 3);
@@ -612,32 +600,6 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </Section>
         )}
 
-        {/* Feature breakdown */}
-        {observedCues.length > 0 && (
-          <Section title="Handwriting Feature Breakdown" subtitle="Every cue examined in your sample, what was observed, and what it may suggest.">
-            {FEATURE_GROUPS.map(([group, keys]) => (
-              <Panel key={group} style={{ padding: "0.9rem 1rem", gap: "0.6rem" }}>
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>{group}</span>
-                {keys.map((k) => {
-                  const v = features[k];
-                  return (
-                    <div key={k} className="grid grid-cols-1 sm:grid-cols-[9rem_7rem_1fr] gap-x-3 gap-y-0.5 text-xs leading-relaxed"
-                      style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "0.5rem" }}>
-                      <b style={{ color: isKnown(v) ? "#e5e7eb" : "#6b7280" }}>{titleCase(k)}</b>
-                      <span style={{ color: isKnown(v) ? "#c4b5fd" : "#6b7280" }}>{isKnown(v) ? v : "Not observed"}</span>
-                      <span style={{ color: "#9ca3af" }}>
-                        {isKnown(v)
-                          ? insights[k] || ""
-                          : "Not clearly visible in this sample, so it was not scored."}
-                      </span>
-                    </div>
-                  );
-                })}
-              </Panel>
-            ))}
-          </Section>
-        )}
-
         {/* 30-day growth plan */}
         {lowDims.length > 0 && (
           <Section title="Your 30-Day Growth Plan" subtitle="Turn the report into a small experiment, not a label.">
@@ -675,7 +637,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         {/* Pattern, conclusion and requested next-step index */}
         {dimensions.length > 0 && (
           <>
-            <Section title="Yr Pattern" subtitle="The recurring rhythm your profile suggests across the strongest and most developing areas.">
+            <Section title="Your Pattern" subtitle="The recurring rhythm your profile suggests across the strongest and most developing areas.">
               <Panel style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.14), rgba(79,70,229,0.05))", gap: "0.8rem" }}>
                 <div className="flex items-center gap-2"><PenLine size={16} style={{ color: "#c4b5fd" }} /><span className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>The pattern at a glance</span></div>
                 <p className="text-sm leading-relaxed" style={{ color: "#c4b5d4" }}>
@@ -695,16 +657,6 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               </Panel>
             </Section>
 
-            <Section title="Yr Next Steps" subtitle="Areas of Improvement">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {["Decision Making", "Desires", "Goals", "Thinking Patterns", "Interpersonal Relations", "Fears and Defenses", "Self-destructive Traits"].map((area, i) => (
-                  <Panel key={area} style={{ padding: "0.85rem 1rem", flexDirection: "row", alignItems: "center", gap: "0.7rem", background: "rgba(255,255,255,0.025)" }}>
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "rgba(124,58,237,0.18)", color: "#c4b5fd" }}>{String(i + 1).padStart(2, "0")}</span>
-                    <span className="text-xs font-semibold" style={{ color: "#e5e7eb" }}>{area}</span>
-                  </Panel>
-                ))}
-              </div>
-            </Section>
           </>
         )}
 
@@ -724,15 +676,6 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </Panel>
         </Section>
 
-        {/* Takeaway */}
-        <Panel style={{ background: "rgba(124,58,237,0.07)" }}>
-          <SectionLabel>The Takeaway</SectionLabel>
-          <p className="text-sm leading-relaxed" style={{ color: "#c4b5d4" }}>
-            You do not need to become a different person. The most useful shift may be to turn your existing strengths
-            into clearer decisions, stronger boundaries and consistent action.
-          </p>
-        </Panel>
-
         {/* Disclaimer */}
         <div className="rounded-xl px-4 py-3 flex gap-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
           <ShieldAlert size={14} style={{ color: "#4b5563", flexShrink: 0, marginTop: "2px" }} strokeWidth={1.8} />
@@ -740,6 +683,23 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             {report?.disclaimer} This report is not financial, medical, legal or psychological advice.
           </p>
         </div>
+
+        {dimensions.length > 0 && (
+          <Section title="Your Next Steps" subtitle="Areas of Improvement">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {["Decision Making", "Desires", "Goals", "Thinking Patterns", "Interpersonal Relations", "Fears and Defenses", "Self-destructive Traits"].map((area, i) => (
+                <Panel key={area} style={{ padding: "0.85rem 1rem", flexDirection: "row", alignItems: "center", gap: "0.7rem", background: "rgba(255,255,255,0.025)" }}>
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "rgba(124,58,237,0.18)", color: "#c4b5fd" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <span className="text-xs font-semibold" style={{ color: "#e5e7eb" }}>{area}</span>
+                </Panel>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        <button type="button" className="w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200" style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", boxShadow: "0 8px 24px rgba(79,70,229,0.24)" }}>
+          Level 2
+        </button>
       </div>
 
       <style>{`
