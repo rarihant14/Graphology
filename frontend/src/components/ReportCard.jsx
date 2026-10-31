@@ -447,12 +447,17 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               />
             )}
             {observedCues.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {observedCues.map(([k, v]) => (
-                  <span key={k} className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.04)", color: "#9ca3af" }}>
-                    <b style={{ color: "#c4b5d4" }}>{titleCase(k)}:</b> {v}
-                  </span>
-                ))}
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+                  Visible clues
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {observedCues.map(([k, v]) => (
+                    <span key={k} className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.04)", color: "#9ca3af" }}>
+                      <b style={{ color: "#c4b5d4" }}>{titleCase(k)}:</b> {v}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </Section>

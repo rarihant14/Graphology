@@ -81,7 +81,7 @@ def _normalize(value) -> str:
     return str(value).strip().lower() if value is not None else "unknown"
 
 
-def _vision_pass(image_bytes: bytes) -> dict[str, str]:
+def _vision_pass(image_bytes: bytes) -> dict[str, tuple[str, str]]:
     """One vision call; returns only allowed, non-low-confidence feature values."""
     from google.genai import types as genai_types
 
@@ -101,19 +101,24 @@ def _vision_pass(image_bytes: bytes) -> dict[str, str]:
     data = json.loads(raw)
     confidence = data.get("confidence") if isinstance(data.get("confidence"), dict) else {}
 
-    result: dict[str, str] = {}
+    result: dict[str, tuple[str, str]] = {}
     for key, allowed in ALLOWED_VALUES.items():
         value = _normalize(data.get(key))
         if value not in allowed:
             continue
-        if _normalize(confidence.get(key)) == "low":
+        confidence_level = _normalize(confidence.get(key))
+        if confidence_level == "low":
             continue
-        result[key] = value
+        if confidence_level not in ("high", "medium"):
+            confidence_level = "medium"
+        result[key] = (value, confidence_level)
     return result
 
 
 def _reconcile(
-    pass_a: dict[str, str], pass_b: dict[str, str], measured: dict[str, str]
+    pass_a: dict[str, tuple[str, str]],
+    pass_b: dict[str, tuple[str, str]],
+    measured: dict[str, str],
 ) -> dict[str, str]:
     """
     Combine two independent vision passes with OpenCV measurements.
@@ -121,24 +126,30 @@ def _reconcile(
     - Measured features: the measurement wins if either pass agrees with it or the
       passes disagree; if both passes agree with each other against the measurement,
       the vision value is kept (the measurement can be wrong on photos).
-    - Other features: kept only when both passes agree; a single confident pass is
-      accepted when the other had no opinion; conflicts become "unknown".
+    - Other features: kept when both passes agree or one confident pass has no
+      competing value; conflicts are resolved only when confidence levels differ.
     """
     final: dict[str, str] = {}
+    confidence_rank = {"medium": 1, "high": 2}
+
     for key in ALLOWED_VALUES:
         a, b, m = pass_a.get(key), pass_b.get(key), measured.get(key)
         if key in _MEASURED and m:
-            if a and a == b and a != m:
-                final[key] = a
+            if a and b and a[0] == b[0] and a[0] != m:
+                final[key] = a[0]
             else:
                 final[key] = m
         elif a and b:
-            if a == b:
-                final[key] = a
-            elif m and m in (a, b):
+            if a[0] == b[0]:
+                final[key] = a[0]
+            elif confidence_rank.get(a[1], 0) > confidence_rank.get(b[1], 0):
+                final[key] = a[0]
+            elif confidence_rank.get(b[1], 0) > confidence_rank.get(a[1], 0):
+                final[key] = b[0]
+            elif m and m in (a[0], b[0]):
                 final[key] = m
         elif a or b:
-            final[key] = a or b
+            final[key] = (a or b)[0]
     return final
 
 
