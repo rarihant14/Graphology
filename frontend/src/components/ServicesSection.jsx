@@ -15,7 +15,7 @@ const ServicesSection = ({ handleAnalysisClick }) => {
       <div className={`relative z-10 max-w-6xl mx-auto fade-up ${isVisible ? "visible" : ""}`}>
         <p className="section-label">WHAT WE OFFER</p>
         <h2 className="section-heading">Our Services</h2>
-        <p className="section-subtext">Two ways to unlock the story your handwriting tells.</p>
+        <p className="section-subtext">Explore visible handwriting patterns through structured observations or a consultation.</p>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Card 1 */}
@@ -25,11 +25,11 @@ const ServicesSection = ({ handleAnalysisClick }) => {
             </div>
             <h3 className="text-foreground font-bold text-2xl mb-4">Handwriting Analysis</h3>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Upload a photo of your handwriting and our AI instantly extracts 10 observable features, maps them through a validated graphology rules engine, and generates a warm, detailed personality traits report.
+              Upload a photo of your handwriting and our AI returns 70 visual observations across 12 categories, each with evidence, confidence, and assessability.
             </p>
             <ul className="text-muted-foreground text-sm space-y-2 mb-8">
               <li><span className="text-primary">✦</span> AI-powered feature extraction</li>
-              <li><span className="text-primary">✦</span> 10-point personality analysis</li>
+              <li><span className="text-primary">✦</span> 70 handwriting observations</li>
               <li><span className="text-primary">✦</span> Downloadable PDF report</li>
             </ul>
             <button onClick={handleAnalysisClick} className="btn-primary mt-auto">
@@ -44,12 +44,12 @@ const ServicesSection = ({ handleAnalysisClick }) => {
             </div>
             <h3 className="text-foreground font-bold text-2xl mb-4">Graphology Consultation</h3>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Book a one-on-one session with a certified graphology consultant for a deeper, personalized reading of your handwriting and personality insights.
+              Book a one-on-one session with a certified graphology consultant for a deeper, personalized review of visible handwriting patterns.
             </p>
             <ul className="text-muted-foreground text-sm space-y-2 mb-8">
               <li><span className="text-primary">✦</span> One-on-one private session</li>
               <li><span className="text-primary">✦</span> Deeper personalized insights</li>
-              <li><span className="text-primary">✦</span> Career, relationships & growth focus</li>
+              <li><span className="text-primary">✦</span> Letter forms, spacing & layout</li>
             </ul>
             <button onClick={() => navigate("/appointment")} className="btn-ghost mt-auto">
               Book Appointment →

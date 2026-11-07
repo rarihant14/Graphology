@@ -20,15 +20,15 @@ const PenIcon = () => (
 const features = [
   {
     title: "AI-Powered Analysis",
-    desc: "Gemini vision AI extracts 10 handwriting features and maps them to a validated graphology rules engine.",
+    desc: "Gemini vision AI examines 70 visual handwriting features and records evidence, confidence, and assessability.",
   },
   {
-    title: "Results in 60 Seconds",
-    desc: "No waiting. Upload your handwriting and receive a full personality traits report almost instantly.",
+    title: "Evidence-Backed Results",
+    desc: "Upload a handwriting image to receive a structured observation report with unknown values where evidence is limited.",
   },
   {
     title: "100% Private",
-    desc: "Your image is processed and immediately discarded. We never store your handwriting — only your anonymized report.",
+    desc: "Your image is processed and immediately discarded. Your observation report is saved to your account history.",
   },
 ];
 
@@ -134,8 +134,8 @@ const LoginPage = () => {
             </h1>
 
             <p className="mb-10 leading-relaxed" style={{ color: "hsl(var(--muted-foreground))", fontSize: "1.05rem" }}>
-              Upload a handwriting sample and our AI reveals your personality traits,
-              emotional patterns, and hidden strengths.
+              Upload a handwriting sample to see 70 evidence-backed visual observations
+              across letter forms, spacing, alignment, and page layout.
             </p>
 
             {/* Feature list */}

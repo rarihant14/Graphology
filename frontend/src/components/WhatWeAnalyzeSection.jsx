@@ -4,7 +4,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 const features = [
   {
     name: "Letter Size",
-    desc: "Reveals confidence and self-image",
+    desc: "Relative height and dimensions of lowercase letters",
     visual: (
       <div className="flex items-end gap-3 justify-center py-4">
         <div className="text-center">
@@ -24,7 +24,7 @@ const features = [
   },
   {
     name: "Slant Direction",
-    desc: "Indicates emotional expression style",
+    desc: "Direction and consistency of representative letter stems",
     visual: (
       <div className="flex items-center gap-6 justify-center py-4">
         {[
@@ -51,7 +51,7 @@ const features = [
   },
   {
     name: "Baseline",
-    desc: "Reflects mood stability and ambition",
+    desc: "Direction, fluctuation, and shape of writing baselines",
     visual: (
       <svg className="w-full mx-auto" style={{ height: "56px" }} viewBox="0 0 200 56">
         <line x1="8"   y1="36" x2="42"  y2="14" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
@@ -69,8 +69,8 @@ const features = [
     ),
   },
   {
-    name: "Writing Pressure",
-    desc: "Shows energy levels and emotional intensity",
+    name: "Ink Darkness and Stroke Width",
+    desc: "Visible ink contrast and apparent stroke thickness",
     visual: (
       <svg className="w-full mx-auto" style={{ height: "44px" }} viewBox="0 0 180 44">
         <line x1="8"   y1="12" x2="52"  y2="12" stroke="hsl(var(--primary))" strokeWidth="7"   strokeLinecap="round" />
@@ -86,7 +86,7 @@ const features = [
   },
   {
     name: "Letter Spacing",
-    desc: "Suggests social comfort and openness",
+    desc: "Average visible gap between adjacent letters",
     visual: (
       <div className="flex items-end gap-2 justify-center py-3">
         <div className="text-center">
@@ -106,7 +106,7 @@ const features = [
   },
   {
     name: "Word Spacing",
-    desc: "Indicates need for personal space",
+    desc: "Average visible distance between consecutive words",
     visual: (
       <div className="flex items-end gap-3 justify-center py-3">
         <div className="text-center">
@@ -135,7 +135,7 @@ const features = [
   },
   {
     name: "Connectivity",
-    desc: "Reflects logical vs intuitive thinking",
+    desc: "Whether adjacent letters visibly connect or separate",
     visual: (
       <div className="flex items-center gap-4 justify-center py-4">
         <div className="text-center">
@@ -155,7 +155,7 @@ const features = [
   },
   {
     name: "Margin Usage",
-    desc: "Reveals relationship with boundaries",
+    desc: "Handwriting distance from visible page edges",
     visual: (
       <div className="flex items-center gap-3 justify-center py-4">
         {[
@@ -186,7 +186,7 @@ const features = [
   },
   {
     name: "Loop Style",
-    desc: "Indicates imagination and emotional depth",
+    desc: "Relative size and openness of visible upper and lower loops",
     visual: (
       <svg className="w-full mx-auto" style={{ height: "58px" }} viewBox="0 0 180 58">
         {/* Open loop */}
@@ -208,7 +208,7 @@ const features = [
   },
   {
     name: "Legibility",
-    desc: "Reflects communication style and clarity",
+    desc: "Ease of visually recognizing the handwritten content",
     visual: (
       <div className="flex items-end gap-2 justify-center py-3">
         <div className="text-center">
@@ -239,9 +239,9 @@ const WhatWeAnalyzeSection = () => {
 
       <div className={`relative z-10 max-w-6xl mx-auto fade-up ${isVisible ? "visible" : ""}`}>
         <p className="section-label">UNDER THE LENS</p>
-        <h2 className="section-heading">10 Features Our AI Reads</h2>
+        <h2 className="section-heading">Examples of Visual Features</h2>
         <p className="section-subtext">
-          We extract precise, observable handwriting features — each mapped to a validated graphology interpretation.
+          The report includes 70 observations across 12 categories. These examples describe visible features only, not personality.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

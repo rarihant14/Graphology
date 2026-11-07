@@ -43,3 +43,21 @@ npm run dev
 - Gemini AI
 - SQLite
 - SQLAlchemy
+
+## Handwriting observation output
+
+`POST /api/analyze` returns schema version `2.0`: an image assessment and exactly
+70 evidence-backed handwriting observations. Each observation includes its
+controlled value, confidence, assessability, and concise visual evidence.
+Features that cannot be evaluated remain `unknown` (or use the feature's
+documented `indeterminate` / `not_assessable` value); they are never guessed.
+The analysis output describes visible handwriting only and does not produce
+personality or psychological conclusions.
+
+The report page displays all observations grouped by category, and the copy
+action exports the complete JSON payload. The PDF download and saved history
+use the same observation report.
+
+## Product prompt
+
+See [docs/APP_PROMPT.md](docs/APP_PROMPT.md) for the detailed product, design, data, PDF, and acceptance prompt for Graphology AI.

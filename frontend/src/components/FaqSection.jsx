@@ -3,28 +3,28 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const faqs = [
   {
-    q: "How accurate is the AI graphology analysis?",
-    a: "Our analysis is based on 10 observable handwriting features mapped through a validated graphology rules engine. While graphology is not scientifically proven, our system provides thoughtful observation-based insights that many users find surprisingly reflective of their personality.",
+    q: "What does the AI analyze?",
+    a: "The report contains 70 visual handwriting observations across 12 categories. Each observation includes confidence, assessability, and concise evidence; it does not infer personality or psychological traits.",
   },
   {
     q: "What kind of handwriting sample should I upload?",
-    a: "Upload a clear photo or scan of at least 3-4 lines of natural handwriting on plain or lined paper. Avoid very short samples — the more natural and relaxed your writing, the more accurate the analysis.",
+    a: "Upload a clear photo or scan with several lines of handwriting and, if you want page-layout observations, visible page boundaries. Features without enough evidence are marked unknown rather than guessed.",
   },
   {
     q: "Is my handwriting image stored anywhere?",
-    a: "No. Your image is processed in real-time and is never stored on our servers. Only your anonymized personality report is saved to your account history.",
+    a: "Your image is processed for analysis and is not saved in your account history. The resulting observation report is saved to your account.",
   },
   {
     q: "How long does the analysis take?",
-    a: "Most analyses complete within 30 to 60 seconds. The AI performs three sequential steps — vision extraction, rules mapping, and report generation — all powered by Google's Gemini AI.",
+    a: "Analysis time can vary with image size and service availability. Gemini vision examines the image and returns the structured observation report.",
   },
   {
     q: "Can I download my report?",
-    a: "Yes. Once your analysis is complete you can download a beautifully formatted PDF report of your personality traits directly from the results page.",
+    a: "Yes. You can copy the complete JSON payload or download a formatted PDF containing the image assessment and all 70 observations.",
   },
   {
     q: "Is this suitable for professional use?",
-    a: "This tool is designed for personal self-reflection and entertainment purposes. It is not intended for clinical assessment, hiring decisions, or professional psychological evaluation.",
+    a: "The report describes visible image features only. It does not provide personality, medical, psychological, hiring, or other decision-making assessments.",
   },
 ];
 

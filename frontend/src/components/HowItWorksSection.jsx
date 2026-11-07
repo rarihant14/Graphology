@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { UploadCloud, Brain, FileText } from "lucide-react";
+import { UploadCloud, Eye, FileText } from "lucide-react";
 
 const steps = [
   {
@@ -11,15 +11,15 @@ const steps = [
   },
   {
     num: "02",
-    icon: Brain,
-    title: "AI Decodes Your Writing",
-    desc: "Our Gemini-powered vision AI extracts 10 observable handwriting features and maps them through a validated graphology rules engine.",
+    icon: Eye,
+    title: "AI Examines the Image",
+    desc: "Gemini vision assesses image quality and records 70 observable features with evidence and confidence.",
   },
   {
     num: "03",
     icon: FileText,
-    title: "Receive Your Personality Report",
-    desc: "Get a warm, detailed personality traits analysis explaining what your handwriting reveals about your inner self.",
+    title: "Receive Your Observation Report",
+    desc: "Review all 70 observations, including features marked unknown when the image does not provide enough evidence.",
   },
 ];
 
@@ -33,8 +33,8 @@ const HowItWorksSection = ({ handleAnalysisClick }) => {
 
       <div className={`relative z-10 max-w-6xl mx-auto fade-up ${isVisible ? "visible" : ""}`}>
         <p className="section-label">THE PROCESS</p>
-        <h2 className="section-heading">Three Steps to Know Yourself</h2>
-        <p className="section-subtext">Simple, fast, and powered by advanced AI graphology.</p>
+        <h2 className="section-heading">Three Steps to Observe Your Handwriting</h2>
+        <p className="section-subtext">A structured visual analysis that avoids personality and psychological conclusions.</p>
 
         <div className="grid md:grid-cols-3 gap-6">
           {steps.map((s) => (

@@ -5,23 +5,23 @@ import { Zap, Shield, BookOpen, Sparkles } from "lucide-react";
 const cards = [
   {
     icon: Zap,
-    title: "Instant AI Analysis",
-    desc: "No waiting for a human graphologist. Our Gemini-powered pipeline analyzes your handwriting and returns a full report in under 60 seconds.",
+    title: "70 Visual Observations",
+    desc: "Gemini vision assesses the image and returns a structured report with 70 handwriting observations.",
   },
   {
     icon: Shield,
     title: "Private by Design",
-    desc: "Your image is processed and immediately discarded. We store only your anonymized report — never your raw handwriting image.",
+    desc: "Your image is processed for analysis and not saved. Your observation report is stored with your account history.",
   },
   {
     icon: BookOpen,
-    title: "Rooted in Real Graphology",
-    desc: "Our rules engine is built on traditional graphology research — not LLM guesswork. Every trait maps to a validated, transparent interpretation.",
+    title: "Evidence for Every Feature",
+    desc: "Every observation includes concise visual evidence, confidence, and assessability. Insufficient evidence is marked unknown.",
   },
   {
     icon: Sparkles,
-    title: "Warm, Human Tone",
-    desc: "Our AI writes like a thoughtful friend, not a clinical report. Insights feel personal, reflective, and empowering.",
+    title: "Observation, Not Inference",
+    desc: "The report describes visible handwriting only and does not infer personality or psychological characteristics.",
   },
 ];
 

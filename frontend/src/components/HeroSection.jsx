@@ -36,15 +36,15 @@ const HeroSection = ({ handleAnalysisClick }) => {
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-foreground leading-tight mb-6">
-          Discover Yourself
+          Observe Your Writing
           <br />
           Through <span className="gradient-text">Your Handwriting</span>
         </h1>
 
         {/* Subtext */}
         <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          Upload a sample of your handwriting and our AI reveals your personality traits,
-          emotional patterns, and hidden strengths — instantly.
+          Upload a handwriting sample for 70 structured visual observations across letter
+          forms, spacing, alignment, and page layout — without personality inference.
         </p>
 
         {/* CTAs */}

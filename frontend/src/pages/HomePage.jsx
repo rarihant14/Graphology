@@ -10,9 +10,9 @@ import { useAnalysis } from "../hooks/useAnalysis";
 import { useAuth } from "../context/AuthContext";
 
 const PROGRESS_STEPS = [
-  { key: "extracting",     label: "Extracting handwriting features...", percent: 30 },
-  { key: "applying_rules", label: "Applying graphology rules...",        percent: 65 },
-  { key: "generating",     label: "Generating your report...",           percent: 90 },
+  { key: "extracting",     label: "Examining the handwriting image...", percent: 30 },
+  { key: "applying_rules", label: "Checking observation evidence...",   percent: 65 },
+  { key: "generating",     label: "Preparing the 70-feature report...", percent: 90 },
   { key: "complete",       label: "Analysis complete!",                  percent: 100 },
 ];
 
@@ -229,7 +229,7 @@ const HomePage = () => {
               Analyze Your Handwriting
             </h1>
             <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "1rem" }}>
-              Upload a clear image of your handwriting to receive a detailed personality insight.
+              Upload a clear image to receive 70 visual handwriting observations with evidence and confidence.
             </p>
           </div>
 

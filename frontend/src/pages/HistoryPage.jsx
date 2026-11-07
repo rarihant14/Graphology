@@ -62,6 +62,11 @@ const SkeletonCard = () => (
 
 const AnalysisCard = ({ analysis, index }) => {
   const [expanded, setExpanded] = useState(false);
+  const isObservationReport = analysis.report?.schema_version === "2.0";
+  const observations = analysis.report?.observations ?? [];
+  const assessableCount = observations.filter(
+    ({ assessability }) => assessability !== "not_assessable",
+  ).length;
   const isLong = analysis.personality_traits?.length > 150;
   const displayText = expanded
     ? analysis.personality_traits
@@ -100,7 +105,18 @@ const AnalysisCard = ({ analysis, index }) => {
           <span className="text-sm font-medium" style={{ color: "#d1d5db" }}>
             Analysis #{index}
           </span>
-          {analysis.report && (
+          {isObservationReport ? (
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                background: "rgba(124,58,237,0.1)",
+                border: "1px solid rgba(124,58,237,0.25)",
+                color: "#a78bfa",
+              }}
+            >
+              {observations.length} observations
+            </span>
+          ) : analysis.report?.archetype ? (
             <span
               className="text-xs font-semibold px-2 py-0.5 rounded-full"
               style={{
@@ -111,7 +127,7 @@ const AnalysisCard = ({ analysis, index }) => {
             >
               {analysis.report.archetype} • {analysis.report.overall_score}/100
             </span>
-          )}
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1.5" style={{ color: "#6b7280" }}>
@@ -120,20 +136,37 @@ const AnalysisCard = ({ analysis, index }) => {
         </div>
       </div>
 
-      {/* Personality traits */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-1.5">
           <Sparkles size={13} style={{ color: "#a78bfa" }} strokeWidth={1.8} />
           <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
-            Personality Traits
+            {isObservationReport ? "Handwriting Observations" : "Personality Traits"}
           </span>
         </div>
         <p className="text-sm leading-relaxed" style={{ color: "#9ca3af" }}>
-          {displayText}
+          {isObservationReport
+            ? `${assessableCount} of ${observations.length} features could be assessed. Image script: ${analysis.report.image_assessment.script}; sample sufficiency: ${analysis.report.image_assessment.sample_sufficiency}.`
+            : displayText}
         </p>
 
-        {/* Read more / less toggle */}
-        {isLong && (
+        {isObservationReport && observations.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {observations
+              .filter(({ observed_value }) => observed_value !== "unknown")
+              .slice(0, 5)
+              .map((observation) => (
+                <span
+                  key={observation.feature_id}
+                  className="rounded-md px-2 py-1 text-[11px]"
+                  style={{ background: "rgba(255,255,255,0.04)", color: "#c4b5d4" }}
+                >
+                  {observation.feature_name}: {observation.observed_value}
+                </span>
+              ))}
+          </div>
+        )}
+
+        {!isObservationReport && isLong && (
           <button
             onClick={() => setExpanded(!expanded)}
             className="flex items-center gap-1 text-xs font-medium self-start transition-all duration-150 mt-1"
@@ -150,8 +183,7 @@ const AnalysisCard = ({ analysis, index }) => {
         )}
       </div>
 
-      {/* Disclaimer */}
-      <div
+      {analysis.disclaimer && <div
         className="rounded-xl px-3 py-2.5"
         style={{
           background: "rgba(255,255,255,0.02)",
@@ -164,7 +196,7 @@ const AnalysisCard = ({ analysis, index }) => {
             {analysis.disclaimer}
           </p>
         </div>
-      </div>
+      </div>}
     </div>
   );
 };
