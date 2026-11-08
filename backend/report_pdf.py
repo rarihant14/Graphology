@@ -14,6 +14,7 @@ from reportlab.platypus import (
     Image,
     KeepTogether,
     Paragraph,
+    PageBreak,
     SimpleDocTemplate,
     Spacer,
     Table,
@@ -55,6 +56,14 @@ _STYLES = {
         "ReportFooter", parent=_BASE["BodyText"], fontSize=8,
         leading=10, textColor=_MUTED, alignment=TA_CENTER,
     ),
+    "metric": ParagraphStyle(
+        "ReportMetric", parent=_BASE["BodyText"], fontName="Helvetica-Bold",
+        fontSize=24, leading=26, textColor=_PURPLE, alignment=TA_CENTER,
+    ),
+    "metric_label": ParagraphStyle(
+        "ReportMetricLabel", parent=_BASE["BodyText"], fontName="Helvetica-Bold",
+        fontSize=8, leading=10, textColor=_INK, alignment=TA_CENTER,
+    ),
 }
 
 
@@ -82,7 +91,7 @@ def _sample_image(image_b64: str | None):
 
         with PILImage.open(io.BytesIO(raw)) as source:
             width, height = source.size
-        scale = min(_CONTENT_WIDTH / width, 70 * mm / height)
+        scale = min(_CONTENT_WIDTH / width, 48 * mm / height)
         return Image(io.BytesIO(raw), width=width * scale, height=height * scale)
     except (ValueError, OSError):
         return None
@@ -115,13 +124,22 @@ def build_report_pdf(
         Paragraph("IMAGE ASSESSMENT", _STYLES["category"]),
     ]
 
+    assessment_items = list(report.image_assessment.model_dump().items())
     assessment_rows = []
-    for key, value in report.image_assessment.model_dump().items():
-        assessment_rows.append([
-            Paragraph(f"<b>{_escape(key.replace('_', ' ').title())}</b>", _STYLES["body"]),
-            Paragraph(_escape(value), _STYLES["body"]),
-        ])
-    assessment_table = Table(assessment_rows, colWidths=[_CONTENT_WIDTH * 0.38, _CONTENT_WIDTH * 0.62])
+    for index in range(0, len(assessment_items), 2):
+        row = []
+        for key, value in assessment_items[index:index + 2]:
+            row.extend([
+                Paragraph(f"<b>{_escape(key.replace('_', ' ').title())}</b>", _STYLES["small"]),
+                Paragraph(_escape(value), _STYLES["body"]),
+            ])
+        if len(row) == 2:
+            row.extend([Paragraph("", _STYLES["small"]), Paragraph("", _STYLES["body"])])
+        assessment_rows.append(row)
+    assessment_table = Table(
+        assessment_rows,
+        colWidths=[_CONTENT_WIDTH * 0.24, _CONTENT_WIDTH * 0.26] * 2,
+    )
     assessment_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f9fafb")),
         ("BOX", (0, 0), (-1, -1), 0.5, _LINE),
@@ -140,18 +158,67 @@ def build_report_pdf(
 
     summary = report.report_summary
     if summary:
-        story.append(Paragraph("YOUR INTERPRETATION SUMMARY", _STYLES["category"]))
-        story.append(Paragraph("TOP 5 STRENGTHS", _STYLES["category"]))
-        for item in summary.top_strengths:
-            story.append(Paragraph(
-                f"<b>What your handwriting suggests: {_escape(item.title)}</b> "
-                f"({_escape(item.confidence)} confidence)<br/>"
-                f"{_escape(item.description)}<br/>"
-                f"<font color='#6b7280'><b>Why we see it:</b> {_escape(item.evidence[0])}. "
-                f"{_escape(item.evidence[1])}</font>",
-                _STYLES["body"],
-            ))
-            story.append(Spacer(1, 4))
+        story.append(Paragraph("REPORT AT A GLANCE", _STYLES["category"]))
+        assessable_count = sum(item.assessability != "not_assessable" for item in report.observations)
+        confidence_rank = {"high": 3, "medium": 2, "low": 1}
+        highest_strengths = sorted(
+            summary.top_strengths,
+            key=lambda item: confidence_rank.get(item.confidence, 0),
+            reverse=True,
+        )[:5]
+        metric_table = Table([
+            [
+                Paragraph("70", _STYLES["metric"]),
+                Paragraph(str(assessable_count), _STYLES["metric"]),
+                Paragraph(_escape(summary.method_confidence.confidence), _STYLES["metric"]),
+            ],
+            [
+                Paragraph("FEATURES REVIEWED", _STYLES["metric_label"]),
+                Paragraph("VISUALLY ASSESSABLE", _STYLES["metric_label"]),
+                Paragraph("OVERALL COVERAGE", _STYLES["metric_label"]),
+            ],
+        ], colWidths=[_CONTENT_WIDTH / 3] * 3)
+        metric_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f3f0ff")),
+            ("BOX", (0, 0), (-1, -1), 0.8, _PURPLE),
+            ("INNERGRID", (0, 0), (-1, -1), 0.3, _LINE),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, 0), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 2),
+            ("TOPPADDING", (0, 1), (-1, 1), 2),
+            ("BOTTOMPADDING", (0, 1), (-1, 1), 8),
+        ]))
+        story.append(metric_table)
+        story.append(Paragraph("TOP 5 HIGHEST-CONFIDENCE STRENGTHS", _STYLES["category"]))
+        strength_rows = []
+        for index, item in enumerate(highest_strengths, 1):
+            strength_rows.append([
+                Paragraph(f"<b>{index}</b>", _STYLES["metric_label"]),
+                Paragraph(
+                    f"<b>{_escape(item.title)}</b> · {_escape(item.description)}<br/>"
+                    f"<font color='#6b7280'>Why we see it: {_escape(item.evidence[0])}</font>",
+                    _STYLES["small"],
+                ),
+            ])
+        if strength_rows:
+            strength_table = Table(strength_rows, colWidths=[_CONTENT_WIDTH * 0.08, _CONTENT_WIDTH * 0.92])
+            strength_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#faf9ff")),
+                ("BOX", (0, 0), (-1, -1), 0.5, _LINE),
+                ("INNERGRID", (0, 0), (-1, -1), 0.3, _LINE),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]))
+            story.append(strength_table)
+        story.append(Paragraph(
+            "This one-page overview is a concise starting point. The following pages explain the evidence, limitations, actions, and all 70 visual observations in detail.",
+            _STYLES["small"],
+        ))
+        story.append(PageBreak())
+        story.append(Paragraph("INTERPRETATION DETAILS", _STYLES["category"]))
         story.append(Paragraph("POTENTIAL BLIND SPOTS", _STYLES["category"]))
         for item in summary.potential_blind_spots:
             story.append(Paragraph(
