@@ -4,7 +4,14 @@ This module is intentionally deterministic. It never invents a cue: a summary
 item is emitted only when its source observation is visible and assessable.
 """
 
-from .observations import HandwritingObservationReport, Observation, ReportSummary, SummaryItem
+from .observations import (
+    ActionPlanItem,
+    HandwritingObservationReport,
+    Observation,
+    ReportSummary,
+    ShareableResultCard,
+    SummaryItem,
+)
 
 
 def _usable(observation: Observation) -> bool:
@@ -80,6 +87,29 @@ def build_report_summary(report: HandwritingObservationReport) -> ReportSummary:
     else:
         confidence = "Limited visual coverage"
 
+    plan = []
+    for item in blind_spots[:3]:
+        plan.append(ActionPlanItem(
+            title=f"Work with {item.title.lower()}",
+            action=f"For the next 10 days, pause once each day to name the priority, the next smallest action, and what can wait.",
+            reason=item.description,
+            timeframe="Days 1–10",
+        ))
+    plan.extend([
+        ActionPlanItem(
+            title="Use your strongest pattern deliberately",
+            action="Choose one strength from this report and apply it to a meaningful task three times each week.",
+            reason="A visible strength becomes more useful when it is practiced intentionally rather than treated as a fixed label.",
+            timeframe="Days 11–20",
+        ),
+        ActionPlanItem(
+            title="Review and adjust",
+            action="At the end of the month, write three lines about what created momentum, what created friction, and one change to carry forward.",
+            reason="Reflection helps separate a durable pattern from a temporary mood or writing context.",
+            timeframe="Days 21–30",
+        ),
+    ])
+
     return ReportSummary(
         top_strengths=strengths,
         potential_blind_spots=blind_spots,
@@ -93,4 +123,11 @@ def build_report_summary(report: HandwritingObservationReport) -> ReportSummary:
                 "Unknown or weakly supported features are excluded rather than guessed.",
             ],
         },
+        personalized_30_day_plan=plan[:5],
+        shareable_result_card=ShareableResultCard(
+            headline="Your handwriting has a pattern worth noticing.",
+            supporting_line="A reflective snapshot of the visible habits in this sample.",
+            highlights=[item.title for item in strengths[:3]] or ["More evidence is needed for a reliable highlight."],
+            call_to_action="Keep the full report as a reflection tool, and revisit the 30-day plan after practicing it.",
+        ),
     )

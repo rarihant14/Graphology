@@ -6,7 +6,7 @@ import re
 from typing import Literal
 
 from google.genai import types as genai_types
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from config import VISION_MODEL, get_gemini_client
 
@@ -431,6 +431,20 @@ class MethodConfidence(BaseModel):
     limitations: list[str]
 
 
+class ActionPlanItem(BaseModel):
+    title: str
+    action: str
+    reason: str
+    timeframe: str
+
+
+class ShareableResultCard(BaseModel):
+    headline: str
+    supporting_line: str
+    highlights: list[str]
+    call_to_action: str
+
+
 class ReportSummary(BaseModel):
     """Reader-friendly summary derived from the evidence-backed observations."""
 
@@ -438,6 +452,8 @@ class ReportSummary(BaseModel):
     potential_blind_spots: list[SummaryItem]
     you_may_be_someone_who: list[str]
     method_confidence: MethodConfidence
+    personalized_30_day_plan: list[ActionPlanItem] = Field(default_factory=list)
+    shareable_result_card: ShareableResultCard | None = None
 
 
 class HandwritingObservationReport(BaseModel):

@@ -144,8 +144,11 @@ def build_report_pdf(
         story.append(Paragraph("TOP 5 STRENGTHS", _STYLES["category"]))
         for item in summary.top_strengths:
             story.append(Paragraph(
-                f"<b>{_escape(item.title)}</b> ({_escape(item.confidence)} confidence)<br/>"
-                f"{_escape(item.description)}<br/><font color='#6b7280'>Based on: {_escape(item.evidence[0])}</font>",
+                f"<b>What your handwriting suggests: {_escape(item.title)}</b> "
+                f"({_escape(item.confidence)} confidence)<br/>"
+                f"{_escape(item.description)}<br/>"
+                f"<font color='#6b7280'><b>Why we see it:</b> {_escape(item.evidence[0])}. "
+                f"{_escape(item.evidence[1])}</font>",
                 _STYLES["body"],
             ))
             story.append(Spacer(1, 4))
@@ -153,7 +156,9 @@ def build_report_pdf(
         for item in summary.potential_blind_spots:
             story.append(Paragraph(
                 f"<b>{_escape(item.title)}</b> ({_escape(item.confidence)} confidence)<br/>"
-                f"{_escape(item.description)}<br/><font color='#6b7280'>Based on: {_escape(item.evidence[0])}</font>",
+                f"{_escape(item.description)}<br/>"
+                f"<font color='#6b7280'><b>Why we see it:</b> {_escape(item.evidence[0])}. "
+                f"{_escape(item.evidence[1])}</font>",
                 _STYLES["body"],
             ))
             story.append(Spacer(1, 4))
@@ -167,11 +172,46 @@ def build_report_pdf(
             + "<br/>".join(f"• {_escape(item)}" for item in method.limitations),
             _STYLES["body"],
         ))
+        story.append(Paragraph("PERSONALISED 30-DAY PLAN", _STYLES["category"]))
+        for index, item in enumerate(summary.personalized_30_day_plan, 1):
+            story.append(Paragraph(
+                f"<b>{index}. {_escape(item.title)} · {_escape(item.timeframe)}</b><br/>"
+                f"{_escape(item.action)}<br/><font color='#6b7280'>Why: {_escape(item.reason)}</font>",
+                _STYLES["body"],
+            ))
+            story.append(Spacer(1, 4))
+        card = summary.shareable_result_card
+        if card:
+            story.append(Paragraph("SHAREABLE RESULT CARD", _STYLES["category"]))
+            card_rows = [[
+                Paragraph(f"<b>{_escape(card.headline)}</b><br/>{_escape(card.supporting_line)}", _STYLES["body"]),
+                Paragraph("<b>Highlights</b><br/>" + "<br/>".join(f"• {_escape(item)}" for item in card.highlights), _STYLES["body"]),
+            ], [
+                Paragraph(f"<b>Next step</b><br/>{_escape(card.call_to_action)}", _STYLES["body"]),
+                Paragraph("Reflective use only · Not a diagnosis or validated personality assessment.", _STYLES["small"]),
+            ]]
+            card_table = Table(card_rows, colWidths=[_CONTENT_WIDTH * 0.55, _CONTENT_WIDTH * 0.45])
+            card_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f3f0ff")),
+                ("BOX", (0, 0), (-1, -1), 0.7, _PURPLE),
+                ("INNERGRID", (0, 0), (-1, -1), 0.3, _LINE),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                ("TOPPADDING", (0, 0), (-1, -1), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ]))
+            story.append(card_table)
 
     observations_by_category = {}
     for observation in report.observations:
         observations_by_category.setdefault(observation.category, []).append(observation)
 
+    story.append(Paragraph("DETAILED VISUAL OBSERVATIONS", _STYLES["category"]))
+    story.append(Paragraph(
+        "This detailed section preserves every feature, its visible evidence, assessability, and confidence for review.",
+        _STYLES["small"],
+    ))
     for category, category_observations in observations_by_category.items():
         story.append(Paragraph(_escape(CATEGORY_NAMES[category]), _STYLES["category"]))
         rows = [[
