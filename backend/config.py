@@ -1,6 +1,7 @@
 
 
 import os
+from functools import lru_cache
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -18,14 +19,38 @@ TEXT_MODEL   = "gemini-3.1-flash-lite"   # Model used for text-only tasks
 
 
 # Client initialisation
+@lru_cache(maxsize=1)
 def get_gemini_client() -> genai.Client:
     """
-    Create and return a configured google.genai Client instance.
+    Return the process-scoped google.genai Client instance.
+
+    The GenAI client owns an underlying HTTP transport.  Creating clients in
+    individual helpers makes it easy for one helper (or a context manager in
+    the SDK/framework) to close that transport while another request is still
+    using it.  Keep one client alive for the application lifetime instead.
 
     Returns:
         genai.Client: Authenticated Gemini client.
     """
+    if not GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
     return genai.Client(api_key=GEMINI_API_KEY)
+
+
+def close_gemini_client() -> None:
+    """Close the shared GenAI transport during application shutdown."""
+    client = get_gemini_client.cache_info()
+    if client.currsize == 0:
+        return
+
+    # lru_cache does not expose the cached value.  Calling the cached function
+    # here is safe because this function is only used during shutdown, after
+    # all requests have completed.
+    cached_client = get_gemini_client()
+    close = getattr(cached_client, "close", None)
+    if callable(close):
+        close()
+    get_gemini_client.cache_clear()
 
 
 # ---------------------------------------------------------------------------

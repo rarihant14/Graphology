@@ -34,6 +34,7 @@ from sqlalchemy.orm import Session
 from agent.agent import run_graphology_pipeline
 from agent.observations import HandwritingObservationReport
 from report_pdf import build_report_pdf
+from config import close_gemini_client
 
 # --- Auth & Database imports ---
 from auth.router import router as auth_router
@@ -71,8 +72,11 @@ async def lifespan(app: FastAPI):
     print("=" * 60)
     print()
     logger.info("Graphology API started successfully.")
-    yield
-    logger.info("Graphology API shutting down.")
+    try:
+        yield
+    finally:
+        close_gemini_client()
+        logger.info("Graphology API shutting down.")
 
 # ---------------------------------------------------------------------------
 # FastAPI application
