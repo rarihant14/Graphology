@@ -22,7 +22,7 @@ const SummaryItem = ({ item }) => (
     </div>
     <p className="mt-2 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{item.description}</p>
     <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#6b7280" }}>
-      Based on: {item.evidence?.[0]}
+      Why we see it: {item.evidence?.[1] || item.evidence?.[0]}
     </p>
   </Panel>
 );
@@ -202,6 +202,37 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         )}
 
         <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+              Reading at a glance
+            </h3>
+            <span className="text-[11px]" style={{ color: "#6b7280" }}>Evidence overview</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Panel className="p-3">
+              <p className="text-[10px] uppercase tracking-wide" style={{ color: "#6b7280" }}>Features reviewed</p>
+              <p className="mt-1 text-lg font-semibold" style={{ color: "#c4b5fd" }}>{observations.length}</p>
+              <p className="text-[10px]" style={{ color: "#8b82a6" }}>visual cues</p>
+            </Panel>
+            <Panel className="p-3">
+              <p className="text-[10px] uppercase tracking-wide" style={{ color: "#6b7280" }}>Assessable</p>
+              <p className="mt-1 text-lg font-semibold" style={{ color: "#c4b5fd" }}>{assessableCount}</p>
+              <p className="text-[10px]" style={{ color: "#8b82a6" }}>with visible evidence</p>
+            </Panel>
+            <Panel className="p-3">
+              <p className="text-[10px] uppercase tracking-wide" style={{ color: "#6b7280" }}>Script</p>
+              <p className="mt-1 text-xs font-semibold" style={{ color: "#d1d5db" }}>{titleCase(report?.image_assessment?.script || "unknown")}</p>
+              <p className="text-[10px]" style={{ color: "#8b82a6" }}>detected writing system</p>
+            </Panel>
+            <Panel className="p-3">
+              <p className="text-[10px] uppercase tracking-wide" style={{ color: "#6b7280" }}>Sample</p>
+              <p className="mt-1 text-xs font-semibold" style={{ color: "#d1d5db" }}>{titleCase(report?.image_assessment?.sample_sufficiency || "unknown")}</p>
+              <p className="text-[10px]" style={{ color: "#8b82a6" }}>coverage quality</p>
+            </Panel>
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
             Image Assessment
           </h3>
@@ -235,6 +266,40 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             rather than guessed.
           </p>
         </section>
+
+        {report?.profile_snapshot && (
+          <section className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+                  Profile Snapshot
+                </h3>
+                <p className="mt-1 text-xs" style={{ color: "#9ca3af" }}>{report.profile_snapshot.one_line_profile}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-semibold" style={{ color: "#c4b5fd" }}>{report.profile_snapshot.overall_score}</p>
+                <p className="text-[10px] uppercase tracking-wide" style={{ color: "#6b7280" }}>overall quotient</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {report.profile_snapshot.dimensions.map((dimension) => (
+                <Panel key={dimension.key} className="p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium" style={{ color: "#d1d5db" }}>{dimension.label}</span>
+                    <span className="text-xs font-semibold" style={{ color: "#c4b5fd" }}>{dimension.score}/100</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${dimension.score}%`, background: "linear-gradient(90deg, #7c3aed, #a78bfa)" }} />
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#8b82a6" }}>{dimension.essence}</p>
+                </Panel>
+              ))}
+            </div>
+            <p className="text-[11px]" style={{ color: "#6b7280" }}>
+              Strongest focus: {report.profile_snapshot.strongest_focus} · Growth focus: {report.profile_snapshot.growth_focus}
+            </p>
+          </section>
+        )}
 
         <p className="text-center text-[11px]" style={{ color: "#6b7280" }}>
           Detailed category-by-category observations are available in the downloaded PDF.

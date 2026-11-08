@@ -445,6 +445,32 @@ class ShareableResultCard(BaseModel):
     call_to_action: str
 
 
+class ProfileDimension(BaseModel):
+    key: str
+    label: str
+    score: int
+    essence: str
+    strength: str
+    blind_spot: str
+    next_move: str
+    evidence: list[str]
+    confidence: str
+    core_style: str
+    growth_shift: str
+    mindful_action: str
+    cue_note: str
+
+
+class ProfileSnapshot(BaseModel):
+    overall_score: int
+    archetype: str
+    archetype_tagline: str
+    one_line_profile: str
+    dimensions: list[ProfileDimension]
+    strongest_focus: str
+    growth_focus: str
+
+
 class ReportSummary(BaseModel):
     """Reader-friendly summary derived from the evidence-backed observations."""
 
@@ -463,6 +489,7 @@ class HandwritingObservationReport(BaseModel):
     image_assessment: ImageAssessment
     observations: list[Observation]
     report_summary: ReportSummary | None = None
+    profile_snapshot: ProfileSnapshot | None = None
 
     @model_validator(mode="after")
     def validate_observations(self):

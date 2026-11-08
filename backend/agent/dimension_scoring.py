@@ -282,6 +282,7 @@ def _band(score: int) -> str:
 def compute_dimension_scores(
     features: HandwritingFeatures,
     interpretations: dict[str, str],
+    include_personal_growth: bool = False,
 ) -> list[dict]:
     """
     Compute a scored, evidence-backed result for every dimension.
@@ -293,7 +294,7 @@ def compute_dimension_scores(
 
     for dimension_key, feature_rules in DIMENSION_RULES.items():
         # Personal & Inner Growth is intentionally omitted from the user-facing report.
-        if dimension_key == "personal_growth":
+        if dimension_key == "personal_growth" and not include_personal_growth:
             continue
         sub_scores: list[int] = []
         evidence: list[str] = []

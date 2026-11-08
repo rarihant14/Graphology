@@ -16,3 +16,5 @@ pydantic[email]
 opencv-python-headless
 numpy
 reportlab
+pypdf
+pymupdf
