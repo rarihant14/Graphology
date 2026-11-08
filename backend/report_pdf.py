@@ -93,7 +93,7 @@ def build_report_pdf(
     name: str = "",
     image_b64: str | None = None,
 ) -> bytes:
-    """Build a paginated PDF containing the same 70 observations as the API."""
+    """Build a paginated PDF containing the API observations and summary."""
     buffer = io.BytesIO()
     document = SimpleDocTemplate(
         buffer,
@@ -137,6 +137,36 @@ def build_report_pdf(
     image = _sample_image(image_b64)
     if image:
         story.extend([image, Spacer(1, 8)])
+
+    summary = report.report_summary
+    if summary:
+        story.append(Paragraph("YOUR INTERPRETATION SUMMARY", _STYLES["category"]))
+        story.append(Paragraph("TOP 5 STRENGTHS", _STYLES["category"]))
+        for item in summary.top_strengths:
+            story.append(Paragraph(
+                f"<b>{_escape(item.title)}</b> ({_escape(item.confidence)} confidence)<br/>"
+                f"{_escape(item.description)}<br/><font color='#6b7280'>Based on: {_escape(item.evidence[0])}</font>",
+                _STYLES["body"],
+            ))
+            story.append(Spacer(1, 4))
+        story.append(Paragraph("POTENTIAL BLIND SPOTS", _STYLES["category"]))
+        for item in summary.potential_blind_spots:
+            story.append(Paragraph(
+                f"<b>{_escape(item.title)}</b> ({_escape(item.confidence)} confidence)<br/>"
+                f"{_escape(item.description)}<br/><font color='#6b7280'>Based on: {_escape(item.evidence[0])}</font>",
+                _STYLES["body"],
+            ))
+            story.append(Spacer(1, 4))
+        story.append(Paragraph("YOU MAY BE SOMEONE WHO", _STYLES["category"]))
+        for statement in summary.you_may_be_someone_who:
+            story.append(Paragraph(f"• {_escape(statement)}", _STYLES["body"]))
+        story.append(Paragraph("METHOD + CONFIDENCE", _STYLES["category"]))
+        method = summary.method_confidence
+        story.append(Paragraph(
+            f"<b>{_escape(method.confidence)}</b><br/>{_escape(method.method)}<br/>"
+            + "<br/>".join(f"• {_escape(item)}" for item in method.limitations),
+            _STYLES["body"],
+        ))
 
     observations_by_category = {}
     for observation in report.observations:

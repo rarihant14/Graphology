@@ -12,6 +12,21 @@ const confidenceColor = {
   low: "#9ca3af",
 };
 
+const SummaryItem = ({ item }) => (
+  <Panel className="p-4">
+    <div className="flex items-start justify-between gap-3">
+      <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>{item.title}</h4>
+      <span className="text-[10px]" style={{ color: confidenceColor[item.confidence] }}>
+        {titleCase(item.confidence)} confidence
+      </span>
+    </div>
+    <p className="mt-2 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{item.description}</p>
+    <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#6b7280" }}>
+      Based on: {item.evidence?.[0]}
+    </p>
+  </Panel>
+);
+
 const Panel = ({ children, className = "" }) => (
   <div
     className={`rounded-2xl p-4 ${className}`}
@@ -141,6 +156,55 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         </header>
 
         {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+
+        {report?.report_summary && (
+          <section className="flex flex-col gap-5">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+                Your Interpretation Summary
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+                A cautious, evidence-linked interpretation of the visible patterns above.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>Top 5 strengths</h4>
+              {report.report_summary.top_strengths.length ? report.report_summary.top_strengths.map((item) => (
+                <SummaryItem key={item.title} item={item} />
+              )) : <p className="text-xs" style={{ color: "#9ca3af" }}>Not enough visible evidence to identify strengths reliably.</p>}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>Potential blind spots</h4>
+              {report.report_summary.potential_blind_spots.length ? report.report_summary.potential_blind_spots.map((item) => (
+                <SummaryItem key={item.title} item={item} />
+              )) : <p className="text-xs" style={{ color: "#9ca3af" }}>No potential blind spot is shown without enough supporting evidence.</p>}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>You may be someone who...</h4>
+              {report.report_summary.you_may_be_someone_who.map((text) => (
+                <Panel key={text} className="p-4">
+                  <p className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{text}</p>
+                </Panel>
+              ))}
+            </div>
+
+            <Panel className="p-4">
+              <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>Method + Confidence</h4>
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+                {report.report_summary.method_confidence.method}
+              </p>
+              <p className="mt-2 text-xs font-semibold" style={{ color: "#a78bfa" }}>
+                {report.report_summary.method_confidence.confidence}
+              </p>
+              <ul className="mt-2 list-disc pl-4 text-[11px] leading-relaxed" style={{ color: "#6b7280" }}>
+                {report.report_summary.method_confidence.limitations.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </Panel>
+          </section>
+        )}
 
         <section className="flex flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>

@@ -3,6 +3,7 @@
 import logging
 
 from .observations import HandwritingObservationReport, extract_handwriting_observations
+from .report_summary import build_report_summary
 
 logger = logging.getLogger(__name__)
 
@@ -16,4 +17,8 @@ async def run_graphology_pipeline(image_bytes: bytes) -> HandwritingObservationR
         len(report.observations),
         sum(item.assessability != "not_assessable" for item in report.observations),
     )
-    return report
+    return HandwritingObservationReport.model_validate({
+        **report.model_dump(),
+        "schema_version": "2.1",
+        "report_summary": build_report_summary(report).model_dump(),
+    })

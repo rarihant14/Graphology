@@ -416,12 +416,37 @@ class Observation(BaseModel):
     evidence: Evidence
 
 
+class SummaryItem(BaseModel):
+    """A cautious interpretation tied to one or more visible observations."""
+
+    title: str
+    description: str
+    evidence: list[str]
+    confidence: Literal["high", "medium", "low"]
+
+
+class MethodConfidence(BaseModel):
+    method: str
+    confidence: str
+    limitations: list[str]
+
+
+class ReportSummary(BaseModel):
+    """Reader-friendly summary derived from the evidence-backed observations."""
+
+    top_strengths: list[SummaryItem]
+    potential_blind_spots: list[SummaryItem]
+    you_may_be_someone_who: list[str]
+    method_confidence: MethodConfidence
+
+
 class HandwritingObservationReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["2.0"]
+    schema_version: Literal["2.0", "2.1"]
     image_assessment: ImageAssessment
     observations: list[Observation]
+    report_summary: ReportSummary | None = None
 
     @model_validator(mode="after")
     def validate_observations(self):

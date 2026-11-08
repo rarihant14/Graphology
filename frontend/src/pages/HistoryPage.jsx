@@ -62,7 +62,7 @@ const SkeletonCard = () => (
 
 const AnalysisCard = ({ analysis, index }) => {
   const [expanded, setExpanded] = useState(false);
-  const isObservationReport = analysis.report?.schema_version === "2.0";
+  const isObservationReport = analysis.report?.schema_version?.startsWith("2.");
   const observations = analysis.report?.observations ?? [];
   const assessableCount = observations.filter(
     ({ assessability }) => assessability !== "not_assessable",
