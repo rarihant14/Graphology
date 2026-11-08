@@ -37,23 +37,23 @@ _BASE = getSampleStyleSheet()
 _STYLES = {
     "title": ParagraphStyle(
         "ReportTitle", parent=_BASE["Title"], fontName="Helvetica-Bold",
-        fontSize=24, leading=29, textColor=_INK, alignment=0, spaceAfter=7,
+        fontSize=26, leading=32, textColor=_INK, alignment=0, spaceAfter=9,
     ),
     "subtitle": ParagraphStyle(
-        "ReportSubtitle", parent=_BASE["BodyText"], fontSize=11,
-        leading=16, textColor=_MUTED, spaceAfter=12,
+        "ReportSubtitle", parent=_BASE["BodyText"], fontSize=12,
+        leading=18, textColor=_MUTED, spaceAfter=14,
     ),
     "category": ParagraphStyle(
         "CategoryTitle", parent=_BASE["Heading2"], fontName="Helvetica-Bold",
-        fontSize=12.5, leading=16, textColor=_PURPLE, spaceBefore=14, spaceAfter=7,
+        fontSize=14, leading=18, textColor=_PURPLE, spaceBefore=16, spaceAfter=9,
     ),
     "body": ParagraphStyle(
-        "ReportBody", parent=_BASE["BodyText"], fontSize=10,
-        leading=14, textColor=_INK,
+        "ReportBody", parent=_BASE["BodyText"], fontSize=11.2,
+        leading=17, textColor=_INK,
     ),
     "small": ParagraphStyle(
-        "ReportSmall", parent=_BASE["BodyText"], fontSize=8.5,
-        leading=11, textColor=_MUTED,
+        "ReportSmall", parent=_BASE["BodyText"], fontSize=9.5,
+        leading=13, textColor=_MUTED,
     ),
     "footer": ParagraphStyle(
         "ReportFooter", parent=_BASE["BodyText"], fontSize=8,
@@ -61,11 +61,11 @@ _STYLES = {
     ),
     "metric": ParagraphStyle(
         "ReportMetric", parent=_BASE["BodyText"], fontName="Helvetica-Bold",
-        fontSize=24, leading=26, textColor=_PURPLE, alignment=TA_CENTER,
+        fontSize=27, leading=30, textColor=_PURPLE, alignment=TA_CENTER,
     ),
     "metric_label": ParagraphStyle(
         "ReportMetricLabel", parent=_BASE["BodyText"], fontName="Helvetica-Bold",
-        fontSize=8, leading=10, textColor=_INK, alignment=TA_CENTER,
+        fontSize=9, leading=12, textColor=_INK, alignment=TA_CENTER,
     ),
     "cover_brand": ParagraphStyle(
         "CoverBrand", parent=_BASE["BodyText"], fontName="Helvetica-Bold",
@@ -90,6 +90,14 @@ _STYLES = {
     "cover_footer": ParagraphStyle(
         "CoverFooter", parent=_BASE["BodyText"], fontSize=7,
         leading=9, textColor=colors.HexColor("#7890b5"), alignment=TA_LEFT,
+    ),
+    "banner_title": ParagraphStyle(
+        "BannerTitle", parent=_BASE["Title"], fontName="Helvetica-Bold",
+        fontSize=20, leading=25, textColor=colors.white, spaceAfter=3,
+    ),
+    "banner_subtitle": ParagraphStyle(
+        "BannerSubtitle", parent=_BASE["BodyText"], fontSize=10.5,
+        leading=14, textColor=colors.HexColor("#ede9fe"),
     ),
 }
 
@@ -132,9 +140,22 @@ _DISCLAIMER = (
 
 
 def _page_title(story, title: str, subtitle: str = ""):
-    story.append(Paragraph(_escape(title), _STYLES["title"]))
+    palette = ["#4c1d95", "#1d4ed8", "#0f766e", "#9a3412", "#9d174d"]
+    color = palette[sum(ord(char) for char in title) % len(palette)]
+    content = [Paragraph(_escape(title), _STYLES["banner_title"])]
     if subtitle:
-        story.append(Paragraph(_escape(subtitle), _STYLES["subtitle"]))
+        content.append(Paragraph(_escape(subtitle), _STYLES["banner_subtitle"]))
+    banner = Table([[content]], colWidths=[_CONTENT_WIDTH])
+    banner.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(color)),
+        ("BOX", (0, 0), (-1, -1), 0, colors.white),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(banner)
+    story.append(Spacer(1, 7))
 
 
 def _dimension_table(dimension, appendix: bool = False):
@@ -160,10 +181,29 @@ def _dimension_table(dimension, appendix: bool = False):
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("LEFTPADDING", (0, 0), (-1, -1), 6),
         ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
     ]))
     return table
+
+
+def _dimension_context(dimension):
+    """Add a fuller plain-language explanation without turning the reading into a verdict."""
+    label = _escape(dimension.label)
+    evidence = ", ".join(_escape(cue) for cue in (dimension.evidence or [])[:3])
+    return Paragraph(
+        f"<b>Putting this into context.</b> {label} is best read as a pattern of emphasis in this sample, "
+        f"not as a permanent description of your personality. The visible cues may become more noticeable "
+        f"when you are working under familiar conditions, and less noticeable when your pace, purpose, tool, "
+        f"or writing environment changes. This is why the interpretation uses language such as may, suggests, "
+        f"and tends to. The evidence connected with this dimension includes {evidence or 'only limited visible cues'}. "
+        f"A useful next step is to compare the description with two or three real situations: one where the pattern "
+        f"helped you, one where it created friction, and one where it was not present at all. That comparison "
+        f"makes the report more personal and more balanced than accepting a score on its own. Keep the part that "
+        f"creates a practical choice, question the part that feels too broad, and remember that a lower score is "
+        f"an invitation to explore a different response rather than evidence of a flaw.",
+        _STYLES["body"],
+    )
 
 
 def _radar_chart(profile):
@@ -239,8 +279,10 @@ def _append_profile_pages(story, profile, summary, name: str):
     story.append(Paragraph("PRIMARY VISIBLE CUES", _STYLES["category"]))
     story.append(Paragraph(summary.method_confidence.method, _STYLES["body"]))
     story.append(Paragraph("The detailed visual observations are retained in the analysis payload and are used as the evidence base for the profile below.", _STYLES["body"]))
+    story.append(Paragraph("A handwriting sample contains several layers at once: the form of individual letters, the rhythm between letters and words, the relationship between lines, and the way the page is used as a visual field. No single mark should carry the whole interpretation. The report combines multiple visible cues and keeps uncertain features qualified, so you can see both what the image can support and where your own lived experience remains the stronger source of truth.", _STYLES["body"]))
     story.append(Paragraph("Image quality and sample sufficiency", _STYLES["category"]))
     story.append(Paragraph("The quality labels on the cover describe how much of the uploaded sample was available for visual review. Where a cue was not clear, the profile uses cautious language rather than certainty.", _STYLES["body"]))
+    story.append(Paragraph("For the most useful future comparison, write a similar passage in ordinary conditions, using the same type of pen and a comfortable pace. Comparing samples over time can reveal which observations are stable and which belonged to a particular moment. This report supports that curiosity; it does not replace context, conversation, or professional guidance.", _STYLES["body"]))
 
     story.append(PageBreak())
     _page_title(story, "Profile Snapshot", "Seven dimensions, one overall quotient, and two useful anchors.")
@@ -280,6 +322,7 @@ def _append_profile_pages(story, profile, summary, name: str):
             ("TOPPADDING", (0, 0), (-1, -1), 7), ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
         ])))
     story.append(Paragraph("Your profile is a conversation starter: it may describe tendencies in this sample, not the limits of who you are.", _STYLES["body"]))
+    story.append(Paragraph("Read the dashboard as a landscape rather than a leaderboard. Stronger dimensions may show where a familiar response is already available to you; the growth focus may show where a smaller, more deliberate experiment could add flexibility. People use different dimensions at different times, so the most valuable insight is often the contrast between two scores and the situation that brings that contrast out.", _STYLES["body"]))
 
     story.append(PageBreak())
     _page_title(story, "Know Your X-Factor", "Three high-scoring signals that may be useful when you choose your next step.")
@@ -294,6 +337,8 @@ def _append_profile_pages(story, profile, summary, name: str):
         story.append(PageBreak())
         _page_title(story, d.label, f"{d.score}/100 · {_escape(d.core_style)}")
         story.append(_dimension_table(d))
+        story.append(Spacer(1, 7))
+        story.append(_dimension_context(d))
         story.append(Paragraph("HOW WE REACHED THIS INSIGHT", _STYLES["category"]))
         story.append(Paragraph(_escape(d.cue_note), _STYLES["small"]))
         story.append(Paragraph("A practical reading: this dimension describes a possible pattern in how you approach situations. Context, mood, writing conditions, and deliberate writing style can all influence what is visible.", _STYLES["small"]))
@@ -316,6 +361,7 @@ def _append_profile_pages(story, profile, summary, name: str):
     story.append(Paragraph("The strongest patterns may show where your current habits create ease. The lower patterns are not weaknesses; they may simply point to places where a different practice could help.", _STYLES["body"]))
     story.append(Paragraph("The useful question is not whether every sentence is true. It is whether one sentence gives you a better choice in real life.", _STYLES["body"]))
     story.append(Paragraph("Across the report, the most reliable thread is the invitation to compare the language with your own experience. Keep the observations that create clarity, and treat the rest as prompts for further reflection.", _STYLES["body"]))
+    story.append(Paragraph("A reflective reading becomes more useful when it ends in a testable choice. Notice the setting in which a pattern appears, name the result you want, and try one small change before drawing a broad conclusion. This keeps the report warm and practical: it gives you language for a possibility while leaving room for context, growth, and surprise.", _STYLES["body"]))
     story.append(Paragraph("THE TAKEAWAY", _STYLES["category"]))
     story.append(Paragraph("Use the report as a mirror with a question attached: what would you like to try next?", _STYLES["body"]))
 
