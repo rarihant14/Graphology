@@ -151,6 +151,27 @@ const ReportCard = ({ report, sampleUrl = null }) => {
 
         {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
 
+        {sampleUrl && (
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+                Handwriting Sample
+              </h3>
+              <span className="text-[11px]" style={{ color: "#9ca3af" }}>Primary visual evidence</span>
+            </div>
+            <img
+              src={sampleUrl}
+              alt="Submitted handwriting sample"
+              className="w-full rounded-xl object-contain"
+              style={{ maxHeight: 420, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(167,139,250,0.22)" }}
+            />
+            <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+              This image is the starting point for the report. The observations below describe only visible letter forms,
+              spacing, alignment, stroke patterns, and page organization. They are reflective possibilities, not fixed conclusions.
+            </p>
+          </section>
+        )}
+
         {report?.report_summary && (
           <section
             className="flex flex-col gap-4 rounded-2xl p-4 sm:p-5"
@@ -176,13 +197,13 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>Top strengths</h4>
-                {report.report_summary.top_strengths.slice(0, 3).map((item) => (
+                {report.report_summary.top_strengths.slice(0, 5).map((item) => (
                   <SummaryItem key={item.title} item={item} />
                 ))}
               </div>
               <div className="flex flex-col gap-2">
                 <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>Potential blind spots</h4>
-                {report.report_summary.potential_blind_spots.slice(0, 2).map((item) => (
+                {report.report_summary.potential_blind_spots.slice(0, 4).map((item) => (
                   <SummaryItem key={item.title} item={item} />
                 ))}
               </div>
@@ -190,7 +211,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
 
             <div className="flex flex-col gap-2">
               <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>You may be someone who...</h4>
-              {report.report_summary.you_may_be_someone_who.slice(0, 2).map((text) => (
+              {report.report_summary.you_may_be_someone_who.slice(0, 4).map((text) => (
                 <p key={text} className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>• {text}</p>
               ))}
             </div>
@@ -232,7 +253,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </div>
         </section>
 
-        <section className="flex flex-col gap-3">
+        <section className="hidden flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
             Image Assessment
           </h3>

@@ -37,23 +37,23 @@ _BASE = getSampleStyleSheet()
 _STYLES = {
     "title": ParagraphStyle(
         "ReportTitle", parent=_BASE["Title"], fontName="Helvetica-Bold",
-        fontSize=22, leading=27, textColor=_INK, alignment=0, spaceAfter=5,
+        fontSize=24, leading=29, textColor=_INK, alignment=0, spaceAfter=7,
     ),
     "subtitle": ParagraphStyle(
-        "ReportSubtitle", parent=_BASE["BodyText"], fontSize=9.5,
-        leading=14, textColor=_MUTED, spaceAfter=10,
+        "ReportSubtitle", parent=_BASE["BodyText"], fontSize=11,
+        leading=16, textColor=_MUTED, spaceAfter=12,
     ),
     "category": ParagraphStyle(
         "CategoryTitle", parent=_BASE["Heading2"], fontName="Helvetica-Bold",
-        fontSize=11, leading=14, textColor=_PURPLE, spaceBefore=12, spaceAfter=5,
+        fontSize=12.5, leading=16, textColor=_PURPLE, spaceBefore=14, spaceAfter=7,
     ),
     "body": ParagraphStyle(
-        "ReportBody", parent=_BASE["BodyText"], fontSize=8.5,
-        leading=12, textColor=_INK,
+        "ReportBody", parent=_BASE["BodyText"], fontSize=10,
+        leading=14, textColor=_INK,
     ),
     "small": ParagraphStyle(
-        "ReportSmall", parent=_BASE["BodyText"], fontSize=7.5,
-        leading=10, textColor=_MUTED,
+        "ReportSmall", parent=_BASE["BodyText"], fontSize=8.5,
+        leading=11, textColor=_MUTED,
     ),
     "footer": ParagraphStyle(
         "ReportFooter", parent=_BASE["BodyText"], fontSize=8,
@@ -440,10 +440,12 @@ def build_report_pdf(
         ("TOPPADDING", (0, 0), (-1, -1), 0),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
     ]))
+    image = _sample_image(image_b64)
     story = [
         Spacer(1, 27 * mm), cover, Spacer(1, 11 * mm),
         Paragraph("Inksight · Your handwriting, interpreted as a mirror for reflection.", _STYLES["cover_footer"]),
         PageBreak(),
+        *([image, Spacer(1, 8)] if image else []),
         Paragraph("INKSIGHT", _STYLES["category"]),
         Paragraph("Handwriting Insight Report", _STYLES["title"]),
         Paragraph("Discover your patterns. Understand your strengths. Choose your next step.", _STYLES["subtitle"]),
@@ -483,10 +485,6 @@ def build_report_pdf(
         ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
     ]))
     story.extend([assessment_table, Spacer(1, 8)])
-
-    image = _sample_image(image_b64)
-    if image:
-        story.extend([image, Spacer(1, 8)])
 
     summary = report.report_summary
     if summary:
