@@ -72,6 +72,27 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   const assessableCount = observations.filter(
     ({ assessability }) => assessability !== "not_assessable",
   ).length;
+  const visibleCues = Object.entries(report?.image_assessment ?? {})
+    .filter(([, value]) => value && value !== "unknown")
+    .slice(0, 6)
+    .map(([key, value]) => ({
+      id: `assessment-${key}`,
+      name: titleCase(key),
+      value: titleCase(value),
+      description: "Visible image-level cue recorded during sample assessment.",
+    }))
+    .concat(
+      observations
+        .filter(({ assessability, observed_value }) => assessability !== "not_assessable" && observed_value !== "unknown")
+        .slice(0, 6)
+        .map((observation) => ({
+          id: observation.feature_id,
+          name: observation.feature_name,
+          value: titleCase(observation.observed_value),
+          description: observation.evidence?.description,
+        })),
+    )
+    .slice(0, 8);
 
   const handleCopy = async () => {
     try {
@@ -192,14 +213,11 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             <div className="rounded-xl p-4" style={{ background: "rgba(14,116,144,0.10)", border: "1px solid rgba(103,232,249,0.18)" }}>
               <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Visible cues in this image</h4>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {(observations.filter(({ assessability }) => assessability !== "not_assessable").slice(0, 6).length
-                  ? observations.filter(({ assessability }) => assessability !== "not_assessable").slice(0, 6)
-                  : observations.slice(0, 6)
-                ).map((observation) => (
-                  <div key={observation.feature_id} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.035)" }}>
-                    <p className="text-[11px] font-medium" style={{ color: "#e5e7eb" }}>{observation.feature_name}</p>
-                    <p className="mt-1 text-[11px]" style={{ color: "#c4b5d4" }}>{titleCase(observation.observed_value)}</p>
-                    <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "#8b82a6" }}>{observation.evidence?.description}</p>
+                {(visibleCues.length ? visibleCues : [{ id: "limited", name: "Sample coverage", value: "Limited", description: "No specific cue passed the evidence threshold for this sample." }]).map((cue) => (
+                  <div key={cue.id} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.035)" }}>
+                    <p className="text-[11px] font-medium" style={{ color: "#e5e7eb" }}>{cue.name}</p>
+                    <p className="mt-1 text-[11px]" style={{ color: "#c4b5d4" }}>{cue.value}</p>
+                    <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "#8b82a6" }}>{cue.description}</p>
                   </div>
                 ))}
               </div>

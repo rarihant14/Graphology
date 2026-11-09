@@ -631,21 +631,32 @@ def _image_mime_type(image_bytes: bytes) -> str:
 
 def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservationReport:
     """Run one grounded vision extraction and enforce the complete observation contract."""
-    response = get_gemini_client().models.generate_content(
-        model=VISION_MODEL,
-        contents=[
+    request = {
+        "model": VISION_MODEL,
+        "contents": [
             genai_types.Part.from_bytes(
                 data=image_bytes,
                 mime_type=_image_mime_type(image_bytes),
             ),
             _VISION_PROMPT,
         ],
-        config=genai_types.GenerateContentConfig(
+        "config": genai_types.GenerateContentConfig(
             temperature=0.0,
             response_mime_type="application/json",
             max_output_tokens=16000,
         ),
-    )
+    }
+    try:
+        response = get_gemini_client().models.generate_content(**request)
+    except RuntimeError as exc:
+        # A stale cached SDK client can survive a development reload. Recreate
+        # it once so an old closed transport does not turn every result into an
+        # error or a fallback report.
+        if "client has been closed" not in str(exc).lower():
+            raise
+        logger.warning("Gemini client transport was closed; recreating it once.")
+        get_gemini_client.cache_clear()
+        response = get_gemini_client().models.generate_content(**request)
     if not response.text:
         raise RuntimeError("The vision model returned an empty observation response.")
 

@@ -138,13 +138,22 @@ def _visible_cues_table(report):
         item for item in report.observations
         if item.assessability != "not_assessable"
     ][:6]
-    if not observations:
-        observations = report.observations[:6]
+    assessment_cues = [
+        (key.replace("_", " ").title(), str(value).replace("_", " ").title())
+        for key, value in report.image_assessment.model_dump().items()
+        if value and value != "unknown"
+    ][:6]
     rows = [[
         Paragraph("Visible cue", _STYLES["metric_label"]),
         Paragraph("Observed value", _STYLES["metric_label"]),
         Paragraph("Evidence note", _STYLES["metric_label"]),
     ]]
+    for key, value in assessment_cues:
+        rows.append([
+            Paragraph(_escape(key), _STYLES["small"]),
+            Paragraph(_escape(value), _STYLES["small"]),
+            Paragraph("Visible image-level cue recorded during sample assessment.", _STYLES["small"]),
+        ])
     for observation in observations:
         rows.append([
             Paragraph(_escape(observation.feature_name), _STYLES["small"]),
