@@ -636,6 +636,27 @@ def _normalize_label(value):
     return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
 
 
+def _resolve_feature_id(item: dict) -> str | None:
+    """Accept exact IDs plus common model variants such as feature_name/name."""
+    candidates = [
+        item.get("feature_id"),
+        item.get("feature_name"),
+        item.get("feature"),
+        item.get("name"),
+        item.get("id"),
+    ]
+    normalized_candidates = {
+        _normalize_label(candidate) for candidate in candidates if isinstance(candidate, str)
+    }
+    for candidate in normalized_candidates:
+        if candidate in FEATURES:
+            return candidate
+    for feature_id, spec in FEATURES.items():
+        if _normalize_label(spec["feature_name"]) in normalized_candidates:
+            return feature_id
+    return None
+
+
 def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservationReport:
     """Run one grounded vision extraction and enforce the complete observation contract."""
     request = {
@@ -682,9 +703,9 @@ def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservati
 
     by_id = {}
     for item in raw_observations:
-        if isinstance(item, dict) and isinstance(item.get("feature_id"), str):
-            feature_id = item["feature_id"]
-            if feature_id in FEATURES and feature_id not in by_id:
+        if isinstance(item, dict):
+            feature_id = _resolve_feature_id(item)
+            if feature_id and feature_id not in by_id:
                 by_id[feature_id] = item
 
     if len(by_id) != 70 or len(raw_observations) != 70:
