@@ -12,6 +12,19 @@ const confidenceColor = {
   low: "#9ca3af",
 };
 
+const confidenceRank = { high: 3, medium: 2, low: 1 };
+
+const primaryCueIds = new Set([
+  "lowercase_size", "capital_size", "predominant_slant", "baseline_direction",
+  "left_margin", "right_margin", "interline_spacing", "interletter_spacing",
+  "interword_spacing", "ink_darkness", "stroke_width", "letter_roundedness",
+  "letter_connectivity", "upper_loop_size", "lower_loop_size", "t_bar_height",
+  "i_dot_shape", "terminal_stroke_direction", "legibility", "overall_regularity",
+  "spatial_organization",
+]);
+
+const readableCueValue = (value) => value.replace(/_/g, " ").toLowerCase();
+
 const SummaryItem = ({ item }) => (
   <Panel className="p-4">
     <div className="flex items-start justify-between gap-3">
@@ -72,27 +85,14 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   const assessableCount = observations.filter(
     ({ assessability }) => assessability !== "not_assessable",
   ).length;
-  const visibleCues = Object.entries(report?.image_assessment ?? {})
-    .filter(([, value]) => value && value !== "unknown")
-    .slice(0, 6)
-    .map(([key, value]) => ({
-      id: `assessment-${key}`,
-      name: titleCase(key),
-      value: titleCase(value),
-      description: "Visible image-level cue recorded during sample assessment.",
-    }))
-    .concat(
-      observations
-        .filter(({ assessability, observed_value }) => assessability !== "not_assessable" && observed_value !== "unknown")
-        .slice(0, 6)
-        .map((observation) => ({
-          id: observation.feature_id,
-          name: observation.feature_name,
-          value: titleCase(observation.observed_value),
-          description: observation.evidence?.description,
-        })),
+  const primaryVisibleCues = observations
+    .filter(
+      ({ feature_id, assessability, observed_value }) =>
+        primaryCueIds.has(feature_id) &&
+        assessability !== "not_assessable" &&
+        observed_value !== "unknown",
     )
-    .slice(0, 8);
+    .sort((left, right) => (confidenceRank[right.confidence] || 0) - (confidenceRank[left.confidence] || 0));
 
   const handleCopy = async () => {
     try {
@@ -211,18 +211,14 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               style={{ maxHeight: 420, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(167,139,250,0.22)" }}
             />
             <div className="rounded-xl p-4" style={{ background: "rgba(14,116,144,0.10)", border: "1px solid rgba(103,232,249,0.18)" }}>
-              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Visible cues in this image</h4>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {(visibleCues.length ? visibleCues : [{ id: "limited", name: "Sample coverage", value: "Limited", description: "No specific cue passed the evidence threshold for this sample." }]).map((cue) => (
-                  <div key={cue.id} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.035)" }}>
-                    <p className="text-[11px] font-medium" style={{ color: "#e5e7eb" }}>{cue.name}</p>
-                    <p className="mt-1 text-[11px]" style={{ color: "#c4b5d4" }}>{cue.value}</p>
-                    <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "#8b82a6" }}>{cue.description}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "#9ca3af" }}>
-                These are the observable features used as evidence. They describe what is visible, not a diagnosis or a fixed personality trait.
+              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Primary visible cues</h4>
+              <p className="mt-3 text-sm leading-relaxed" style={{ color: "#e5e7eb" }}>
+                {primaryVisibleCues.length
+                  ? primaryVisibleCues.slice(0, 6).map(({ feature_name, observed_value }) => `${feature_name.toLowerCase()}: ${readableCueValue(observed_value)}`).join(", ")
+                  : "The sample did not provide enough reliable evidence for a concise primary-cue summary."}
+              </p>
+              <p className="mt-3 text-[11px]" style={{ color: "#8b82a6" }}>
+                {primaryVisibleCues.length} of {primaryCueIds.size} handwriting cues were clearly observable in your sample.
               </p>
             </div>
             <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
