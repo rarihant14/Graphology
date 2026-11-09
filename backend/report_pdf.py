@@ -132,6 +132,41 @@ def _sample_image(image_b64: str | None):
         return None
 
 
+def _visible_cues_table(report):
+    """Render a concise evidence panel immediately below the submitted image."""
+    observations = [
+        item for item in report.observations
+        if item.assessability != "not_assessable"
+    ][:6]
+    if not observations:
+        observations = report.observations[:6]
+    rows = [[
+        Paragraph("Visible cue", _STYLES["metric_label"]),
+        Paragraph("Observed value", _STYLES["metric_label"]),
+        Paragraph("Evidence note", _STYLES["metric_label"]),
+    ]]
+    for observation in observations:
+        rows.append([
+            Paragraph(_escape(observation.feature_name), _STYLES["small"]),
+            Paragraph(_escape(observation.observed_value.replace("_", " ").title()), _STYLES["small"]),
+            Paragraph(_escape(observation.evidence.description), _STYLES["small"]),
+        ])
+    table = Table(rows, colWidths=[_CONTENT_WIDTH * 0.28, _CONTENT_WIDTH * 0.22, _CONTENT_WIDTH * 0.50])
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e0f2fe")),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#f8fafc")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#075985")),
+        ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#bae6fd")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#dbeafe")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    return table
+
+
 _DISCLAIMER = (
     "Graphology is a traditional interpretive practice, not scientifically validated. "
     "This report is for self-reflection and entertainment only, not diagnosis or financial, "
@@ -492,6 +527,7 @@ def build_report_pdf(
         Paragraph("Inksight · Your handwriting, interpreted as a mirror for reflection.", _STYLES["cover_footer"]),
         PageBreak(),
         *([image, Spacer(1, 8)] if image else []),
+        *([Paragraph("VISIBLE CUES IN THIS IMAGE", _STYLES["category"]), _visible_cues_table(report), Spacer(1, 10)] if image else []),
         Paragraph("INKSIGHT", _STYLES["category"]),
         Paragraph("Handwriting Insight Report", _STYLES["title"]),
         Paragraph("Discover your patterns. Understand your strengths. Choose your next step.", _STYLES["subtitle"]),
