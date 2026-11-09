@@ -629,6 +629,13 @@ def _image_mime_type(image_bytes: bytes) -> str:
     return "image/jpeg"
 
 
+def _normalize_label(value):
+    """Normalize harmless model formatting differences before enum validation."""
+    if not isinstance(value, str):
+        return value
+    return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
+
+
 def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservationReport:
     """Run one grounded vision extraction and enforce the complete observation contract."""
     request = {
@@ -695,7 +702,7 @@ def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservati
             normalized.append(_unknown_observation(feature_id))
             continue
         evidence = item.get("evidence")
-        value = item.get("observed_value")
+        value = _normalize_label(item.get("observed_value"))
         if value not in spec["allowed_values"]:
             normalized.append(_unknown_observation(feature_id))
             continue
@@ -704,7 +711,7 @@ def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservati
             continue
         letters = evidence.get("supporting_letters")
         description = evidence.get("description")
-        coverage = evidence.get("coverage")
+        coverage = _normalize_label(evidence.get("coverage"))
         if (
             not isinstance(description, str)
             or not description.strip()
@@ -716,8 +723,8 @@ def extract_handwriting_observations(image_bytes: bytes) -> HandwritingObservati
             continue
 
         observation_value = value
-        confidence = item.get("confidence")
-        assessability = item.get("assessability")
+        confidence = _normalize_label(item.get("confidence"))
+        assessability = _normalize_label(item.get("assessability"))
         if observation_value == "unknown":
             confidence = "low"
             assessability = "not_assessable"

@@ -14,15 +14,6 @@ const confidenceColor = {
 
 const confidenceRank = { high: 3, medium: 2, low: 1 };
 
-const primaryCueIds = new Set([
-  "lowercase_size", "capital_size", "predominant_slant", "baseline_direction",
-  "left_margin", "right_margin", "interline_spacing", "interletter_spacing",
-  "interword_spacing", "ink_darkness", "stroke_width", "letter_roundedness",
-  "letter_connectivity", "upper_loop_size", "lower_loop_size", "t_bar_height",
-  "i_dot_shape", "terminal_stroke_direction", "legibility", "overall_regularity",
-  "spatial_organization",
-]);
-
 const readableCueValue = (value) => value.replace(/_/g, " ").toLowerCase();
 
 const SummaryItem = ({ item }) => (
@@ -87,12 +78,13 @@ const ReportCard = ({ report, sampleUrl = null }) => {
   ).length;
   const primaryVisibleCues = observations
     .filter(
-      ({ feature_id, assessability, observed_value }) =>
-        primaryCueIds.has(feature_id) &&
+      ({ assessability, observed_value, evidence }) =>
         assessability !== "not_assessable" &&
-        observed_value !== "unknown",
+        observed_value !== "unknown" &&
+        evidence?.description,
     )
     .sort((left, right) => (confidenceRank[right.confidence] || 0) - (confidenceRank[left.confidence] || 0));
+  const primaryCueTotal = 21;
 
   const handleCopy = async () => {
     try {
@@ -218,7 +210,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
                   : "The sample did not provide enough reliable evidence for a concise primary-cue summary."}
               </p>
               <p className="mt-3 text-[11px]" style={{ color: "#8b82a6" }}>
-                {primaryVisibleCues.length} of {primaryCueIds.size} handwriting cues were clearly observable in your sample.
+                {Math.min(primaryVisibleCues.length, primaryCueTotal)} of {primaryCueTotal} handwriting cues were clearly observable in your sample.
               </p>
             </div>
             <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
