@@ -39,6 +39,30 @@ const Panel = ({ children, className = "" }) => (
   </div>
 );
 
+const DimensionDetails = ({ dimension }) => (
+  <Panel className="p-4">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>{dimension.label}</h4>
+        <p className="mt-1 text-xs" style={{ color: "#c4b5fd" }}>{dimension.score}/100 · {dimension.core_style}</p>
+      </div>
+      <span className="rounded-full px-2 py-1 text-[10px]" style={{ background: "rgba(124,58,237,0.14)", color: "#c4b5fd" }}>
+        {titleCase(dimension.confidence)} confidence
+      </span>
+    </div>
+    <p className="mt-3 text-xs leading-relaxed" style={{ color: "#d1c4df" }}>{dimension.essence}</p>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <p className="text-[11px] leading-relaxed" style={{ color: "#9fe4f4" }}><b>Strength:</b> {dimension.strength}</p>
+      <p className="text-[11px] leading-relaxed" style={{ color: "#f5c2d7" }}><b>Potential blind spot:</b> {dimension.blind_spot}</p>
+      <p className="text-[11px] leading-relaxed" style={{ color: "#c4b5fd" }}><b>Growth shift:</b> {dimension.growth_shift}</p>
+      <p className="text-[11px] leading-relaxed" style={{ color: "#a7f3d0" }}><b>Next move:</b> {dimension.next_move}</p>
+    </div>
+    <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "#8b82a6" }}>
+      Why we see it: {dimension.evidence?.slice(0, 3).join(" · ") || "Limited visible evidence was available."}
+    </p>
+  </Panel>
+);
+
 const ReportCard = ({ report, sampleUrl = null }) => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -165,6 +189,24 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               className="w-full rounded-xl object-contain"
               style={{ maxHeight: 420, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(167,139,250,0.22)" }}
             />
+            <div className="rounded-xl p-4" style={{ background: "rgba(14,116,144,0.10)", border: "1px solid rgba(103,232,249,0.18)" }}>
+              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Visible cues in this image</h4>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {(observations.filter(({ assessability }) => assessability !== "not_assessable").slice(0, 6).length
+                  ? observations.filter(({ assessability }) => assessability !== "not_assessable").slice(0, 6)
+                  : observations.slice(0, 6)
+                ).map((observation) => (
+                  <div key={observation.feature_id} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.035)" }}>
+                    <p className="text-[11px] font-medium" style={{ color: "#e5e7eb" }}>{observation.feature_name}</p>
+                    <p className="mt-1 text-[11px]" style={{ color: "#c4b5d4" }}>{titleCase(observation.observed_value)}</p>
+                    <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "#8b82a6" }}>{observation.evidence?.description}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "#9ca3af" }}>
+                These are the observable features used as evidence. They describe what is visible, not a diagnosis or a fixed personality trait.
+              </p>
+            </div>
             <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
               This image is the starting point for the report. The observations below describe only visible letter forms,
               spacing, alignment, stroke patterns, and page organization. They are reflective possibilities, not fixed conclusions.
@@ -319,6 +361,47 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             <p className="text-[11px]" style={{ color: "#6b7280" }}>
               Strongest focus: {report.profile_snapshot.strongest_focus} · Growth focus: {report.profile_snapshot.growth_focus}
             </p>
+          </section>
+        )}
+
+        {report?.profile_snapshot && (
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>Dimension Insights</h3>
+              <span className="text-[11px]" style={{ color: "#6b7280" }}>The same core points as the PDF</span>
+            </div>
+            {report.profile_snapshot.dimensions.map((dimension) => (
+              <DimensionDetails key={`detail-${dimension.key}`} dimension={dimension} />
+            ))}
+          </section>
+        )}
+
+        {report?.report_summary && (
+          <section className="grid gap-3 sm:grid-cols-2">
+            <Panel>
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#a78bfa" }}>Personalised 30-day plan</h3>
+              <div className="mt-3 flex flex-col gap-3">
+                {report.report_summary.personalized_30_day_plan.slice(0, 4).map((item) => (
+                  <div key={item.title}>
+                    <p className="text-xs font-semibold" style={{ color: "#e5e7eb" }}>{item.timeframe}: {item.title}</p>
+                    <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "#c4b5d4" }}>{item.action}</p>
+                    <p className="mt-1 text-[10px]" style={{ color: "#8b82a6" }}>{item.reason}</p>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+            <Panel>
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#a78bfa" }}>Method + confidence</h3>
+              <p className="mt-3 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>{report.report_summary.method_confidence.method}</p>
+              <p className="mt-3 text-xs" style={{ color: confidenceColor[report.report_summary.method_confidence.confidence] }}>
+                Confidence: {titleCase(report.report_summary.method_confidence.confidence)}
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-relaxed" style={{ color: "#8b82a6" }}>
+                {report.report_summary.method_confidence.limitations.slice(0, 4).map((limitation) => (
+                  <li key={limitation}>{limitation}</li>
+                ))}
+              </ul>
+            </Panel>
           </section>
         )}
 
