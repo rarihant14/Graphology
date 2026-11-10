@@ -67,6 +67,67 @@ const DimensionDetails = ({ dimension }) => (
   </Panel>
 );
 
+const ObservationCard = ({ observation }) => (
+  <Panel className="p-4">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h4 className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>{observation.feature_name}</h4>
+        <p className="mt-1 text-xs font-medium" style={{ color: observation.observed_value === "unknown" ? "#a78bfa" : "#9fe4f4" }}>
+          {titleCase(observation.observed_value)}
+        </p>
+      </div>
+      <div className="text-right text-[10px]" style={{ color: confidenceColor[observation.confidence] }}>
+        <p>{titleCase(observation.confidence)} confidence</p>
+        <p className="mt-1" style={{ color: "#6b7280" }}>{titleCase(observation.assessability)}</p>
+      </div>
+    </div>
+    <p className="mt-3 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+      {observation.evidence?.description || "No evidence description was returned for this cue."}
+    </p>
+    <p className="mt-2 text-[11px]" style={{ color: "#8b82a6" }}>
+      Coverage: {titleCase(observation.evidence?.coverage || "unknown")}
+      {observation.evidence?.supporting_letters?.length
+        ? ` · Supporting letters: ${observation.evidence.supporting_letters.join(", ")}`
+        : ""}
+    </p>
+  </Panel>
+);
+
+const ObservationBreakdown = ({ observations }) => {
+  const groups = observations.reduce((result, observation) => {
+    const category = observation.category || "other";
+    result[category] = result[category] || [];
+    result[category].push(observation);
+    return result;
+  }, {});
+
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
+            Full 70-Cue Observation Report
+          </h3>
+          <p className="mt-1 text-xs" style={{ color: "#9ca3af" }}>
+            Every visual cue returned by the handwriting analysis, grouped by category.
+          </p>
+        </div>
+        <span className="text-[11px]" style={{ color: "#c4b5fd" }}>{observations.length} cues</span>
+      </div>
+      {Object.entries(groups).map(([category, items]) => (
+        <details key={category} open className="rounded-2xl p-4" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(167,139,250,0.16)" }}>
+          <summary className="cursor-pointer text-sm font-semibold" style={{ color: "#c4b5fd" }}>
+            {titleCase(category)} <span className="ml-2 text-[11px] font-normal" style={{ color: "#8b82a6" }}>{items.length} cues</span>
+          </summary>
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            {items.map((observation) => <ObservationCard key={observation.feature_id} observation={observation} />)}
+          </div>
+        </details>
+      ))}
+    </section>
+  );
+};
+
 const ReportCard = ({ report, sampleUrl = null }) => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -84,7 +145,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         evidence?.description,
     )
     .sort((left, right) => (confidenceRank[right.confidence] || 0) - (confidenceRank[left.confidence] || 0));
-  const primaryCueTotal = 21;
+  const primaryCueTotal = observations.length || 70;
 
   const handleCopy = async () => {
     try {
@@ -300,6 +361,8 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             </Panel>
           </div>
         </section>
+
+        <ObservationBreakdown observations={observations} />
 
         <section className="hidden flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
