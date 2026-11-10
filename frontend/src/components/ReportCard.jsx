@@ -67,6 +67,23 @@ const DimensionDetails = ({ dimension }) => (
   </Panel>
 );
 
+const ShareCardPreview = ({ card, profile }) => (
+  <Panel className="p-4">
+    <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#a78bfa" }}>Shareable result card</h3>
+    <div className="mt-3 rounded-xl p-4" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.22), rgba(14,116,144,0.16))", border: "1px solid rgba(167,139,250,0.24)" }}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9fe4f4" }}>INKSIGHT</p>
+      <p className="mt-2 text-lg font-semibold" style={{ color: "#f3f0ff" }}>{card?.headline || profile?.archetype || "Your handwriting profile"}</p>
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: "#ddd6fe" }}>{card?.supporting_line || profile?.one_line_profile}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(card?.highlights || profile?.dimensions?.slice(0, 3).map((item) => `${item.label}: ${item.score}/100`)).map((highlight) => (
+          <span key={highlight} className="rounded-full px-2 py-1 text-[10px]" style={{ background: "rgba(255,255,255,0.10)", color: "#ede9fe" }}>{highlight}</span>
+        ))}
+      </div>
+      <p className="mt-3 text-[11px]" style={{ color: "#c4b5fd" }}>{card?.call_to_action || "See your patterns. Understand your tendencies. Choose your next move."}</p>
+    </div>
+  </Panel>
+);
+
 const ObservationCard = ({ observation }) => (
   <Panel className="p-4">
     <div className="flex items-start justify-between gap-3">
@@ -145,7 +162,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
         evidence?.description,
     )
     .sort((left, right) => (confidenceRank[right.confidence] || 0) - (confidenceRank[left.confidence] || 0));
-  const primaryCueTotal = observations.length || 70;
+  const primaryCueTotal = 70;
 
   const handleCopy = async () => {
     try {
@@ -263,14 +280,14 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               className="w-full rounded-xl object-contain"
               style={{ maxHeight: 420, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(167,139,250,0.22)" }}
             />
-            <div className="rounded-xl p-4" style={{ background: "rgba(14,116,144,0.10)", border: "1px solid rgba(103,232,249,0.18)" }}>
-              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Primary visible cues</h4>
-              <p className="mt-3 text-sm leading-relaxed" style={{ color: "#e5e7eb" }}>
+            <div className="rounded-lg px-3 py-2.5" style={{ background: "rgba(14,116,144,0.08)", border: "1px solid rgba(103,232,249,0.14)" }}>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "#9fe4f4" }}>Primary visible cues</h4>
+              <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#e5e7eb" }}>
                 {primaryVisibleCues.length
                   ? primaryVisibleCues.slice(0, 6).map(({ feature_name, observed_value }) => `${feature_name.toLowerCase()}: ${readableCueValue(observed_value)}`).join(", ")
                   : "The sample did not provide enough reliable evidence for a concise primary-cue summary."}
               </p>
-              <p className="mt-3 text-[11px]" style={{ color: "#8b82a6" }}>
+              <p className="mt-1.5 text-[10px]" style={{ color: "#8b82a6" }}>
                 {Math.min(primaryVisibleCues.length, primaryCueTotal)} of {primaryCueTotal} handwriting cues were clearly observable in your sample.
               </p>
             </div>
@@ -471,6 +488,25 @@ const ReportCard = ({ report, sampleUrl = null }) => {
                 ))}
               </ul>
             </Panel>
+          </section>
+        )}
+
+        {report?.profile_snapshot && (
+          <section className="grid gap-3 sm:grid-cols-2">
+            <Panel>
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#a78bfa" }}>Graphology story</h3>
+              <p className="mt-3 text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>
+                {report.profile_snapshot.one_line_profile} The strongest patterns may show where familiar habits create ease,
+                while the growth focus offers a place to test a more deliberate response.
+              </p>
+              <div className="mt-3 rounded-lg p-3" style={{ background: "rgba(124,58,237,0.10)" }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#c4b5fd" }}>The takeaway</p>
+                <p className="mt-1 text-xs leading-relaxed" style={{ color: "#e5e7eb" }}>
+                  Keep the interpretation that creates a useful choice, and set aside anything that does not match your lived experience.
+                </p>
+              </div>
+            </Panel>
+            <ShareCardPreview card={report.report_summary?.shareable_result_card} profile={report.profile_snapshot} />
           </section>
         )}
 
