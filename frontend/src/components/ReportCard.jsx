@@ -67,6 +67,22 @@ const DimensionDetails = ({ dimension }) => (
   </Panel>
 );
 
+const DimensionDetailAdditions = ({ dimension }) => (
+  <>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <p className="text-[11px] leading-relaxed" style={{ color: "#f0abfc" }}><b>Core style:</b> {dimension.core_style}</p>
+      <p className="text-[11px] leading-relaxed" style={{ color: "#bae6fd" }}><b>Mindful action:</b> {dimension.mindful_action}</p>
+    </div>
+    <div className="mt-3 rounded-lg p-3" style={{ background: "rgba(124,58,237,0.08)" }}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#c4b5fd" }}>How we reached this insight</p>
+      <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "#a8a0b8" }}>{dimension.cue_note}</p>
+    </div>
+    <p className="mt-3 text-[11px] italic leading-relaxed" style={{ color: "#9ca3af" }}>
+      Reflection: Which part of this interpretation matches your lived experience, and which part does not?
+    </p>
+  </>
+);
+
 const ShareCardPreview = ({ card, profile }) => (
   <Panel className="p-4">
     <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#a78bfa" }}>Shareable result card</h3>
@@ -379,8 +395,6 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </div>
         </section>
 
-        <ObservationBreakdown observations={observations} />
-
         <section className="hidden flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
             Image Assessment
@@ -457,7 +471,10 @@ const ReportCard = ({ report, sampleUrl = null }) => {
               <span className="text-[11px]" style={{ color: "#6b7280" }}>The same core points as the PDF</span>
             </div>
             {report.profile_snapshot.dimensions.map((dimension) => (
-              <DimensionDetails key={`detail-${dimension.key}`} dimension={dimension} />
+              <div key={`detail-${dimension.key}`} className="flex flex-col gap-3">
+                <DimensionDetails dimension={dimension} />
+                <DimensionDetailAdditions dimension={dimension} />
+              </div>
             ))}
           </section>
         )}
