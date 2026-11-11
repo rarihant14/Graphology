@@ -459,6 +459,7 @@ class ProfileDimension(BaseModel):
     growth_shift: str
     mindful_action: str
     cue_note: str
+    detailed_explanation: str = ""
 
 
 class ProfileSnapshot(BaseModel):

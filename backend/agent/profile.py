@@ -56,6 +56,26 @@ _CUE_NOTES = {
 }
 
 
+def _detailed_explanation(item: dict, cue_note: str) -> str:
+    """Create the shared long-form explanation used by PDF and web reports."""
+    evidence = ", ".join(item.get("evidence", [])[:4]) or "limited visible evidence"
+    return (
+        f"{item['label']} is best understood as a possible pattern of emphasis in this sample, not as a permanent label. "
+        f"The profile currently places this dimension at {item['score']} out of 100. That number is a summary of visible "
+        f"observations and should be read alongside the plain-language interpretation, the evidence, and the action below. "
+        f"The profile suggests that {item['essence'].lower()} This may be useful when you are working in situations that "
+        f"reward this tendency, but it may feel different when your purpose, pace, writing tool, environment, or emotional "
+        f"state changes. The possible strength is that {item['strength'].lower()} The possible blind spot is that "
+        f"{item['blind_spot'].lower()} These are not contradictions; a strength can become unhelpful when it is used "
+        f"automatically or without enough flexibility. The suggested growth shift is {item['growth_shift'].lower()} "
+        f"A practical next move is {item['next_move'].lower()} You can test this by noticing one real situation where "
+        f"the pattern helped, one where it created friction, and one where it was absent. Compare those examples before "
+        f"deciding whether the interpretation fits. The visible evidence considered here includes {evidence}. {cue_note} "
+        f"Use this explanation as a reflective prompt: keep what gives you a clearer choice, question what feels too broad, "
+        f"and remember that a lower score can describe an area for practice or a different context rather than a personal flaw."
+    )
+
+
 def build_profile_snapshot(report: HandwritingObservationReport) -> ProfileSnapshot:
     features = _map_values(report)
     interpretations = {
@@ -75,6 +95,10 @@ def build_profile_snapshot(report: HandwritingObservationReport) -> ProfileSnaps
             mindful_action=item["next_move"],
             evidence=item["evidence"][:4],
             cue_note=_CUE_NOTES.get(item["key"], "Visible handwriting cues are summarized in the original observation record."),
+            detailed_explanation=_detailed_explanation(
+                item,
+                _CUE_NOTES.get(item["key"], "Visible handwriting cues are summarized in the original observation record."),
+            ),
         ))
     ordered = sorted(dimensions, key=lambda item: item.score, reverse=True)
     return ProfileSnapshot(

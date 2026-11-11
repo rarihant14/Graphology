@@ -222,6 +222,8 @@ def _dimension_table(dimension, appendix: bool = False):
 
 def _dimension_context(dimension):
     """Add a fuller plain-language explanation without turning the reading into a verdict."""
+    if dimension.detailed_explanation:
+        return Paragraph(_escape(dimension.detailed_explanation), _STYLES["body"])
     label = _escape(dimension.label)
     evidence = ", ".join(_escape(cue) for cue in (dimension.evidence or [])[:3])
     return Paragraph(

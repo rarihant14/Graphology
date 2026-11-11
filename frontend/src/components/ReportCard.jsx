@@ -69,6 +69,9 @@ const DimensionDetails = ({ dimension }) => (
 
 const DimensionDetailAdditions = ({ dimension }) => (
   <>
+    <Panel className="p-4">
+      <p className="text-xs leading-relaxed" style={{ color: "#d1c4df" }}>{dimension.detailed_explanation}</p>
+    </Panel>
     <div className="mt-3 grid gap-2 sm:grid-cols-2">
       <p className="text-[11px] leading-relaxed" style={{ color: "#f0abfc" }}><b>Core style:</b> {dimension.core_style}</p>
       <p className="text-[11px] leading-relaxed" style={{ color: "#bae6fd" }}><b>Mindful action:</b> {dimension.mindful_action}</p>
