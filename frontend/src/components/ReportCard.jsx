@@ -314,6 +314,18 @@ const ReportCard = ({ report, sampleUrl = null }) => {
           </section>
         )}
 
+        <section className="rounded-2xl p-4 sm:p-5" style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(167,139,250,0.18)" }}>
+          <h3 className="text-sm font-semibold" style={{ color: "#c4b5fd" }}>BEGIN WITH AWARENESS</h3>
+          <p className="mt-1 text-xs leading-relaxed" style={{ color: "#9ca3af" }}>A reflective report is most useful when it becomes a choice, not a label.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+            {["01 Observe · Notice the visible pattern before assigning meaning.", "02 Reflect · Ask what feels familiar, useful, or incomplete.", "03 Apply · Turn one insight into a small experiment.", "04 Choose · Keep what helps and leave what does not fit."].map((item) => {
+              const [title, ...description] = item.split(" · ");
+              return <div key={title} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.04)" }}><p className="text-xs font-semibold" style={{ color: "#e5e7eb" }}>{title}</p><p className="mt-1 text-[11px] leading-relaxed" style={{ color: "#c4b5d4" }}>{description.join(" · ")}</p></div>;
+            })}
+          </div>
+          <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "#8b82a6" }}>A note on interpretation: graphology is a traditional interpretive practice, not scientifically validated, and this report is for self-reflection and entertainment only.</p>
+        </section>
+
         {report?.report_summary && (
           <section
             className="flex flex-col gap-4 rounded-2xl p-4 sm:p-5"
@@ -338,13 +350,13 @@ const ReportCard = ({ report, sampleUrl = null }) => {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>Top strengths</h4>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>TOP 5 STRENGTHS</h4>
                 {report.report_summary.top_strengths.slice(0, 5).map((item) => (
                   <SummaryItem key={item.title} item={item} />
                 ))}
               </div>
               <div className="flex flex-col gap-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>Potential blind spots</h4>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>POTENTIAL BLIND SPOTS</h4>
                 {report.report_summary.potential_blind_spots.slice(0, 4).map((item) => (
                   <SummaryItem key={item.title} item={item} />
                 ))}
@@ -352,7 +364,7 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>You may be someone who...</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#e5e7eb" }}>YOU MAY BE SOMEONE WHO...</h4>
               {report.report_summary.you_may_be_someone_who.slice(0, 4).map((text) => (
                 <p key={text} className="text-xs leading-relaxed" style={{ color: "#c4b5d4" }}>• {text}</p>
               ))}
@@ -394,6 +406,22 @@ const ReportCard = ({ report, sampleUrl = null }) => {
             </Panel>
           </div>
         </section>
+
+        {report?.profile_snapshot && (
+          <section className="flex flex-col gap-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>KNOW YOUR X-FACTOR</h3>
+            <p className="text-xs leading-relaxed" style={{ color: "#9ca3af" }}>Three high-scoring signals that may be useful when you choose your next step.</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {report.profile_snapshot.dimensions.slice(0, 3).map((dimension) => (
+                <Panel key={`factor-${dimension.key}`} className="p-3">
+                  <p className="text-sm font-semibold" style={{ color: "#e5e7eb" }}>{dimension.label} · {dimension.score}/100</p>
+                  <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#c4b5d4" }}><b>What your profile suggests:</b> {dimension.essence}</p>
+                  <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#a7f3d0" }}><b>Make it useful:</b> {dimension.next_move}</p>
+                </Panel>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="hidden flex-col gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7c3aed" }}>
