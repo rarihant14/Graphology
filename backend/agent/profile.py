@@ -56,7 +56,7 @@ _CUE_NOTES = {
 }
 
 
-def _detailed_explanation(item: dict, cue_note: str) -> str:
+def _detailed_explanation(item: dict, cue_note: str, growth_shift: str) -> str:
     """Create the shared long-form explanation used by PDF and web reports."""
     evidence = ", ".join(item.get("evidence", [])[:4]) or "limited visible evidence"
     return (
@@ -67,7 +67,7 @@ def _detailed_explanation(item: dict, cue_note: str) -> str:
         f"reward this tendency, but it may feel different when your purpose, pace, writing tool, environment, or emotional "
         f"state changes. The possible strength is that {item['strength'].lower()} The possible blind spot is that "
         f"{item['blind_spot'].lower()} These are not contradictions; a strength can become unhelpful when it is used "
-        f"automatically or without enough flexibility. The suggested growth shift is {item['growth_shift'].lower()} "
+        f"automatically or without enough flexibility. The suggested growth shift is {growth_shift.lower()} "
         f"A practical next move is {item['next_move'].lower()} You can test this by noticing one real situation where "
         f"the pattern helped, one where it created friction, and one where it was absent. Compare those examples before "
         f"deciding whether the interpretation fits. The visible evidence considered here includes {evidence}. {cue_note} "
@@ -87,17 +87,19 @@ def build_profile_snapshot(report: HandwritingObservationReport) -> ProfileSnaps
     dimensions = []
     for item in raw:
         band = "higher" if item["score"] >= 70 else "developing" if item["score"] < 40 else "balanced"
+        growth_shift = "Use the strength in this dimension deliberately, while watching for the tendency described as its blind spot."
         dimension_data = {key: value for key, value in item.items() if key != "evidence"}
         dimensions.append(ProfileDimension(
             **dimension_data,
             core_style=f"A {band} pattern in {item['label'].lower()}.",
-            growth_shift=f"Use the strength in this dimension deliberately, while watching for the tendency described as its blind spot.",
+            growth_shift=growth_shift,
             mindful_action=item["next_move"],
             evidence=item["evidence"][:4],
             cue_note=_CUE_NOTES.get(item["key"], "Visible handwriting cues are summarized in the original observation record."),
             detailed_explanation=_detailed_explanation(
                 item,
                 _CUE_NOTES.get(item["key"], "Visible handwriting cues are summarized in the original observation record."),
+                growth_shift,
             ),
         ))
     ordered = sorted(dimensions, key=lambda item: item.score, reverse=True)
