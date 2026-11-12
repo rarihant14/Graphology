@@ -182,6 +182,13 @@ const ReportLabel = ({ children }) => (
   <h3 className="mt-5 mb-2 text-sm font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>{children}</h3>
 );
 
+const DimensionPoint = ({ label, value, accent }) => (
+  <div className="rounded-xl p-4" style={{ background: `linear-gradient(135deg, ${accent}18, rgba(255,255,255,0.035))`, border: `1px solid ${accent}45`, boxShadow: `0 8px 24px ${accent}12` }}>
+    <p className="text-sm font-bold" style={{ color: accent }}>{label}</p>
+    <p className="mt-2 text-sm leading-7" style={{ color: "#d1c4df" }}>{value}</p>
+  </div>
+);
+
 const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -339,7 +346,14 @@ const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
 
           {dimensions.map((dimension) => <ReportSection key={dimension.key} title={dimension.label} subtitle={`${dimension.score}/100 · ${dimension.core_style}`}>
             <ReportText>{dimension.detailed_explanation}</ReportText>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2"><ReportText><b>Essence:</b> {dimension.essence}</ReportText><ReportText><b>Strength:</b> {dimension.strength}</ReportText><ReportText><b>Watch For:</b> {dimension.blind_spot}</ReportText><ReportText><b>Growth Shift:</b> {dimension.growth_shift}</ReportText><ReportText><b>Core Style:</b> {dimension.core_style}</ReportText><ReportText><b>Mindful Action:</b> {dimension.mindful_action}</ReportText></div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <DimensionPoint label="Essence" value={dimension.essence} accent="#c4b5fd" />
+              <DimensionPoint label="Strength" value={dimension.strength} accent="#9fe4f4" />
+              <DimensionPoint label="Watch For" value={dimension.blind_spot} accent="#f5c2d7" />
+              <DimensionPoint label="Growth Shift" value={dimension.growth_shift} accent="#f0abfc" />
+              <DimensionPoint label="Core Style" value={dimension.core_style} accent="#a7f3d0" />
+              <DimensionPoint label="Mindful Action" value={dimension.mindful_action} accent="#bae6fd" />
+            </div>
             <ReportLabel>How We Reached This Insight</ReportLabel><ReportText>{dimension.cue_note}</ReportText><ReportText className="mt-3">{(dimension.evidence || []).join(" · ") || "No single cue was strong enough to summarize."}</ReportText>
           </ReportSection>)}
 
