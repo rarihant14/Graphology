@@ -164,7 +164,25 @@ const ObservationBreakdown = ({ observations }) => {
   );
 };
 
-const ReportCard = ({ report, sampleUrl = null }) => {
+const ReportSection = ({ title, subtitle, children, className = "" }) => (
+  <section className={`rounded-xl overflow-hidden ${className}`} style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
+    <div style={{ background: "#1b3157", padding: "18px 20px" }}>
+      <h2 className="text-xl font-bold" style={{ color: "#fff" }}>{title}</h2>
+      {subtitle && <p className="mt-1 text-sm" style={{ color: "#ede9fe" }}>{subtitle}</p>}
+    </div>
+    <div className="p-5 sm:p-7" style={{ color: "#1f1b2e" }}>{children}</div>
+  </section>
+);
+
+const ReportText = ({ children, className = "" }) => (
+  <p className={`text-sm leading-7 ${className}`} style={{ color: "#1f1b2e" }}>{children}</p>
+);
+
+const ReportLabel = ({ children }) => (
+  <h3 className="mt-5 mb-2 text-sm font-bold uppercase tracking-wider" style={{ color: "#6d28d9" }}>{children}</h3>
+);
+
+const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
@@ -228,6 +246,127 @@ const ReportCard = ({ report, sampleUrl = null }) => {
     }
   };
 
+  const profile = report?.profile_snapshot;
+  const summary = report?.report_summary;
+  const dimensions = profile?.dimensions || [];
+  const preparedName = name || "Your handwriting profile";
+  const assessmentItems = Object.entries(report?.image_assessment || {});
+
+  return (
+    <div className="overflow-hidden rounded-2xl" style={{ background: "#f8fafc", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4" style={{ background: "#111827" }}>
+        <div>
+          <p className="text-xs font-bold tracking-widest" style={{ color: "#9fe4f4" }}>INKSIGHT</p>
+          <p className="mt-1 text-sm font-semibold" style={{ color: "#fff" }}>PDA Graphology Analysis Report</p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={handleCopy} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs" style={{ border: "1px solid rgba(255,255,255,0.18)", color: "#c4b5fd", background: "transparent" }}>
+            {copied ? <Check size={13} /> : <Copy size={13} />}{copied ? "Copied" : "Copy JSON"}
+          </button>
+          <button type="button" onClick={handleDownload} disabled={downloading} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs" style={{ background: "#6d28d9", border: "1px solid #8b5cf6", color: "#fff", opacity: downloading ? 0.7 : 1 }}>
+            {downloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}{downloading ? "Preparing..." : "Download PDF"}
+          </button>
+        </div>
+      </div>
+
+      {error && <p className="m-4 text-xs" style={{ color: "#b91c1c" }}>{error}</p>}
+
+      <div className="flex flex-col gap-7 p-4 sm:p-7">
+        <section className="rounded-none p-8 text-center sm:p-14" style={{ background: "#1b3157", color: "#fff" }}>
+          <p className="text-base font-bold tracking-wide" style={{ color: "#9fe4f4" }}>INKSIGHT</p>
+          <h1 className="mt-10 text-3xl font-bold leading-tight sm:text-5xl">PDA GRAPHOLOGY<br />ANALYSIS REPORT</h1>
+          <p className="mt-4 text-sm">A personalized self-discovery report based on traditional graphology</p>
+          <p className="mt-16 text-lg font-bold">Prepared for</p>
+          <p className="text-lg">{preparedName}</p>
+          <p className="mx-auto mt-16 max-w-xl text-sm leading-6">Discover your patterns. Understand your strengths. Choose your next step.</p>
+        </section>
+        <p className="text-xs" style={{ color: "#6b7280" }}>Inksight · Your handwriting, interpreted as a mirror for reflection.</p>
+
+        <ReportSection title="Handwriting Insight Report" subtitle={`Discover your patterns. Understand your strengths. Choose your next step. Schema ${report?.schema_version || "2.1"} · ${new Date().toLocaleDateString("en-GB")}${name ? ` · ${name}` : ""}`}>
+          {sampleUrl && (
+            <>
+              <img src={sampleUrl} alt="Submitted handwriting sample" className="mx-auto w-full rounded-lg object-contain" style={{ maxHeight: 520, background: "#f8fafc", border: "1px solid #dbeafe" }} />
+              <ReportLabel>Visible Cues in This Image</ReportLabel>
+              <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #bae6fd" }}>
+                <table className="w-full text-left text-xs">
+                  <thead style={{ background: "#e0f2fe", color: "#075985" }}><tr><th className="p-3">Visible cue</th><th className="p-3">Observed value</th><th className="p-3">Evidence note</th></tr></thead>
+                  <tbody>{observations.filter((item) => item.assessability !== "not_assessable").slice(0, 6).map((item) => <tr key={item.feature_id} style={{ background: "#f8fafc", borderTop: "1px solid #dbeafe" }}><td className="p-3 font-semibold">{item.feature_name}</td><td className="p-3">{titleCase(item.observed_value)}</td><td className="p-3">{item.evidence?.description || "No evidence description was returned for this cue."}</td></tr>)}</tbody>
+                </table>
+              </div>
+            </>
+          )}
+          <ReportLabel>Image Assessment</ReportLabel>
+          <div className="grid gap-2 sm:grid-cols-2">{assessmentItems.map(([key, value]) => <div key={key} className="rounded-lg p-3" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}><p className="text-xs font-bold" style={{ color: "#6b7280" }}>{titleCase(key)}</p><p className="mt-1 text-sm">{titleCase(value)}</p></div>)}</div>
+          <ReportLabel>Report at a Glance</ReportLabel>
+          <div className="grid gap-2 sm:grid-cols-3">{[["70", "Features reviewed"], [String(assessableCount), "Visually assessable"], [summary?.method_confidence?.confidence || "low", "Overall coverage"]].map(([value, label]) => <div key={label} className="rounded-lg p-4 text-center" style={{ background: "#f3f0ff", border: "1px solid #c4b5fd" }}><p className="text-2xl font-bold" style={{ color: "#6d28d9" }}>{value}</p><p className="text-xs font-bold uppercase" style={{ color: "#1f1b2e" }}>{label}</p></div>)}</div>
+          <ReportText className="mt-5">This one-page overview is a concise starting point. The following pages explain the evidence, limitations, actions, and all 70 visual observations in detail.</ReportText>
+        </ReportSection>
+
+        <ReportSection title="Begin With Awareness" subtitle="A reflective report is most useful when it becomes a choice, not a label.">
+          <div className="grid gap-3 sm:grid-cols-2">{[
+            ["01 Observe", "Notice the visible pattern before assigning meaning."], ["02 Reflect", "Ask what feels familiar, useful, or incomplete."], ["03 Apply", "Turn one insight into a small experiment."], ["04 Choose", "Keep what helps and leave what does not fit."],
+          ].map(([title, text]) => <div key={title} className="rounded-lg p-4" style={{ background: "#f3f0ff" }}><p className="font-bold">{title}</p><p className="mt-1 text-sm leading-6">{text}</p></div>)}</div>
+          <ReportLabel>A Note on Interpretation</ReportLabel><ReportText>{"Graphology is a traditional interpretive practice, not scientifically validated. This report is for self-reflection and entertainment only, not diagnosis or financial, health, or relationship advice."}</ReportText>
+          <ReportLabel>How to Read Your Report</ReportLabel><ReportText>Read the score beside the language and evidence. A low score is not a flaw; it is a possible area for curiosity, practice, or a different context.</ReportText>
+        </ReportSection>
+
+        <ReportSection title="Your Handwriting" subtitle="The image is the source. The interpretation stays grounded in what is visible.">
+          <ReportLabel>Primary Visible Cues</ReportLabel><ReportText>{summary?.method_confidence?.method || "The report uses visible letter forms, spacing, alignment, stroke patterns, and page organization."}</ReportText>
+          <ReportText className="mt-4">The detailed visual observations are retained in the analysis payload and are used as the evidence base for the profile below.</ReportText>
+          <ReportText className="mt-4">A handwriting sample contains several layers at once: the form of individual letters, the rhythm between letters and words, the relationship between lines, and the way the page is used as a visual field. No single mark should carry the whole interpretation. The report combines multiple visible cues and keeps uncertain features qualified, so you can see both what the image can support and where your own lived experience remains the stronger source of truth.</ReportText>
+          <ReportLabel>Image Quality and Sample Sufficiency</ReportLabel><ReportText>The quality labels on the cover describe how much of the uploaded sample was available for visual review. Where a cue was not clear, the profile uses cautious language rather than certainty.</ReportText>
+        </ReportSection>
+
+        {profile && <>
+          <ReportSection title="Profile Snapshot" subtitle="Seven dimensions, one overall quotient, and two useful anchors.">
+            <div className="grid gap-3">{dimensions.map((dimension) => <div key={dimension.key}><div className="flex justify-between text-sm font-semibold"><span>{dimension.label}</span><span>{dimension.score}/100</span></div><div className="mt-2 h-2 rounded-full" style={{ background: "#ede9fe" }}><div className="h-full rounded-full" style={{ width: `${dimension.score}%`, background: "#6d28d9" }} /></div></div>)}</div>
+            <div className="mt-6 rounded-lg p-4 text-center" style={{ background: "#f3f0ff" }}><p className="text-3xl font-bold" style={{ color: "#6d28d9" }}>{profile.overall_score}/100</p><p className="text-xs font-bold uppercase">Overall Quotient</p></div>
+            <ReportText className="mt-4">Strongest focus: {profile.strongest_focus} · Growth focus: {profile.growth_focus}</ReportText>
+            <ReportText className="mt-4">The quotient is the rounded mean of the seven dimension scores. The bars show relative emphasis in this sample; they are not grades, diagnoses, or fixed personality limits.</ReportText>
+          </ReportSection>
+
+          <ReportSection title="Personality Dashboard" subtitle={profile.one_line_profile}>
+            <ReportText><b>{profile.archetype}</b><br />{profile.archetype_tagline}</ReportText>
+            <ReportLabel>Trait Signals</ReportLabel><div className="flex flex-wrap gap-2">{dimensions.slice(0, 12).map((d) => <span key={d.key} className="rounded-full px-3 py-1 text-xs" style={{ background: "#f3f0ff", color: "#6d28d9" }}>{d.label}</span>)}</div>
+            <ReportText className="mt-5">Your profile is a conversation starter: it may describe tendencies in this sample, not the limits of who you are.</ReportText>
+            <ReportText className="mt-4">Read the dashboard as a landscape rather than a leaderboard. Stronger dimensions may show where a familiar response is already available to you; the growth focus may show where a smaller, more deliberate experiment could add flexibility.</ReportText>
+          </ReportSection>
+
+          <ReportSection title="Know Your X-Factor" subtitle="Three high-scoring signals that may be useful when you choose your next step.">
+            {dimensions.slice(0, 3).map((d) => <div key={d.key} className="mb-4 rounded-lg p-4" style={{ background: "#faf9ff", border: "1px solid #e5e7eb" }}><ReportText><b>{d.label} · {d.score}/100</b></ReportText><ReportText className="mt-2">What your profile suggests: {d.essence}<br />Make it useful: {d.next_move}</ReportText></div>)}
+          </ReportSection>
+
+          {dimensions.map((dimension) => <ReportSection key={dimension.key} title={dimension.label} subtitle={`${dimension.score}/100 · ${dimension.core_style}`}>
+            <ReportText>{dimension.detailed_explanation}</ReportText>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2"><ReportText><b>Essence:</b> {dimension.essence}</ReportText><ReportText><b>Strength:</b> {dimension.strength}</ReportText><ReportText><b>Watch For:</b> {dimension.blind_spot}</ReportText><ReportText><b>Growth Shift:</b> {dimension.growth_shift}</ReportText><ReportText><b>Core Style:</b> {dimension.core_style}</ReportText><ReportText><b>Mindful Action:</b> {dimension.mindful_action}</ReportText></div>
+            <ReportLabel>How We Reached This Insight</ReportLabel><ReportText>{dimension.cue_note}</ReportText><ReportText className="mt-3">{(dimension.evidence || []).join(" · ") || "No single cue was strong enough to summarize."}</ReportText>
+          </ReportSection>)}
+
+          <ReportSection title="30-Day Growth Plan" subtitle="Small experiments create better information than fixed labels.">{(summary?.personalized_30_day_plan || []).slice(0, 4).map((item, index) => <div key={item.title} className="mb-4"><ReportText><b>{item.timeframe || `Week ${index + 1}`} · {item.title}</b><br />{item.action}<br /><span style={{ color: "#6b7280" }}>Why: {item.reason}</span></ReportText></div>)}</ReportSection>
+          <ReportSection title="Graphology Story" subtitle="A narrative summary of the profile, written as a possibility rather than a verdict."><ReportText>{profile.one_line_profile}</ReportText><ReportText className="mt-4">The strongest patterns may show where your current habits create ease. The lower patterns are not weaknesses; they may simply point to places where a different practice could help.</ReportText><ReportText className="mt-4">The useful question is not whether every sentence is true. It is whether one sentence gives you a better choice in real life.</ReportText><ReportText className="mt-4">Across the report, the most reliable thread is the invitation to compare the language with your own experience. Keep the observations that create clarity, and treat the rest as prompts for further reflection.</ReportText><ReportLabel>The Takeaway</ReportLabel><ReportText>Use the report as a mirror with a question attached: what would you like to try next?</ReportText></ReportSection>
+          <ReportSection title="Trust the Process" subtitle="See your patterns. Understand your tendencies. Choose your next move."><ReportText>{"Graphology is a traditional interpretive practice, not scientifically validated. This report is for self-reflection and entertainment only, not diagnosis or financial, health, or relationship advice."}</ReportText><ReportLabel>About Inksight</ReportLabel><ReportText>Inksight turns visible handwriting cues into a structured reflection experience. It is designed to support curiosity, not replace professional advice or lived experience.</ReportText></ReportSection>
+
+          <ReportSection title="Your Personal Insight Layer" subtitle="Score + interpretation + evidence + action"><ReportText>{"Graphology is a traditional interpretive practice, not scientifically validated. This report is for self-reflection and entertainment only, not diagnosis or financial, health, or relationship advice."}</ReportText></ReportSection>
+          {dimensions.map((d) => <ReportSection key={`appendix-${d.key}`} title={d.label} subtitle={`Personal insight · ${d.score}/100`}><ReportText>{d.detailed_explanation}</ReportText><ReportLabel>Why We See It</ReportLabel>{(d.evidence || []).map((cue, index) => <ReportText key={`${d.key}-${index}`} className="mt-2"><b>Evidence {index + 1}</b> · {cue}</ReportText>)}<ReportLabel>Original Report Cues</ReportLabel><ReportText>{d.cue_note}</ReportText><ReportText className="mt-4"><b>Strength:</b> {d.strength}<br /><b>Potential Blind Spot:</b> {d.blind_spot}<br /><b>Next Move:</b> {d.next_move}</ReportText><ReportText className="mt-4" style={{ fontStyle: "italic" }}>Which part of this interpretation matches your lived experience, and which part does not?</ReportText></ReportSection>)}
+          <ReportSection title="Top 5 Strengths" subtitle="Ranked signals to practice, not labels to perform.">{dimensions.slice(0, 5).map((d, index) => <ReportText key={d.key} className="mb-4"><b>{index + 1}. {d.label} · {d.score}/100</b><br />{d.strength}<br /><span style={{ color: "#6b7280" }}>Potential blind spot: {d.blind_spot}<br />Cue: {(d.evidence || ["Not enough evidence"])[0]}</span></ReportText>)}</ReportSection>
+          <ReportSection title="You May Be Someone Who…" subtitle="Seven readable statements to test against your lived experience.">{dimensions.slice(0, 7).map((d) => <ReportText key={`may-${d.key}`} className="mb-3">• You may be someone who {d.essence.charAt(0).toLowerCase() + d.essence.slice(1)}</ReportText>)}<ReportLabel>A Useful Test</ReportLabel><ReportText>Keep the statement that helps you notice a choice. Set aside the statement that does not match your lived experience.</ReportText></ReportSection>
+          <ReportSection title="Personalised 30-Day Plan" subtitle="Built from the three lowest-scoring dimensions, with low scores treated as invitations rather than flaws.">{[...dimensions].sort((a, b) => a.score - b.score).slice(0, 3).map((d, index) => <ReportText key={`plan-${d.key}`} className="mb-4"><b>Focus {index + 1}: {d.label}</b><br />{d.next_move}<br /><span style={{ color: "#6b7280" }}>Why: {d.growth_shift}</span></ReportText>)}<ReportLabel>Day 30 Review</ReportLabel><ReportText>What became easier? What still needs a smaller experiment? What will you carry into the next month?</ReportText><ReportText className="mt-4"><b>30-DAY PRINCIPLE:</b> consistent and small is more informative than intense and temporary.</ReportText></ReportSection>
+          <ReportSection title="Share Card" subtitle="A compact version of the reflection to save or share."><ReportText><b>{preparedName}</b><br />{profile.archetype}<br />{profile.one_line_profile}</ReportText><ReportText className="mt-4">{dimensions.slice(0, 3).map((d) => `${d.label} ${d.score}/100`).join(" · ")}</ReportText><ReportText className="mt-4">Suggested caption: A reflective snapshot of the patterns in my handwriting, with one next step to try.</ReportText><ReportText className="mt-4">CTA: See your patterns. Understand your tendencies. Choose your next move.</ReportText></ReportSection>
+          <ReportSection title="Method + Confidence" subtitle="What was observed, how it was interpreted, and where the limits are."><ReportText>{summary?.method_confidence?.method}</ReportText><ReportText className="mt-4">Confidence level: {summary?.method_confidence?.confidence}</ReportText><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6">{(summary?.method_confidence?.limitations || []).map((item) => <li key={item}>{item}</li>)}</ul><ReportText className="mt-5">{"Graphology is a traditional interpretive practice, not scientifically validated. This report is for self-reflection and entertainment only, not diagnosis or financial, health, or relationship advice."}</ReportText></ReportSection>
+        </>}
+
+        <p className="text-center text-xs" style={{ color: "#6b7280" }}>INKSIGHT · Reflective handwriting report</p>
+      </div>
+    </div>
+  );
+};
+
+/*
+ * The report is intentionally rendered as a document: the section order and
+ * copy above mirror backend/report_pdf.py so the browser and downloaded PDF
+ * tell the same story.
+ */
+/*
   return (
     <div
       className="overflow-hidden rounded-2xl"
@@ -565,5 +704,6 @@ const ReportCard = ({ report, sampleUrl = null }) => {
     </div>
   );
 };
+*/
 
 export default ReportCard;
