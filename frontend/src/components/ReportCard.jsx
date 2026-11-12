@@ -165,21 +165,21 @@ const ObservationBreakdown = ({ observations }) => {
 };
 
 const ReportSection = ({ title, subtitle, children, className = "" }) => (
-  <section className={`rounded-xl overflow-hidden ${className}`} style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
-    <div style={{ background: "#1b3157", padding: "18px 20px" }}>
+  <section className={`overflow-hidden rounded-2xl ${className}`} style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(167,139,250,0.18)", boxShadow: "0 16px 40px rgba(0,0,0,0.14)" }}>
+    <div style={{ background: "linear-gradient(135deg, rgba(76,29,149,0.92), rgba(30,64,175,0.82))", padding: "18px 20px" }}>
       <h2 className="text-xl font-bold" style={{ color: "#fff" }}>{title}</h2>
       {subtitle && <p className="mt-1 text-sm" style={{ color: "#ede9fe" }}>{subtitle}</p>}
     </div>
-    <div className="p-5 sm:p-7" style={{ color: "#1f1b2e" }}>{children}</div>
+    <div className="p-5 sm:p-7" style={{ color: "#d1c4df" }}>{children}</div>
   </section>
 );
 
 const ReportText = ({ children, className = "" }) => (
-  <p className={`text-sm leading-7 ${className}`} style={{ color: "#1f1b2e" }}>{children}</p>
+  <p className={`text-sm leading-7 ${className}`} style={{ color: "#d1c4df" }}>{children}</p>
 );
 
 const ReportLabel = ({ children }) => (
-  <h3 className="mt-5 mb-2 text-sm font-bold uppercase tracking-wider" style={{ color: "#6d28d9" }}>{children}</h3>
+  <h3 className="mt-5 mb-2 text-sm font-bold uppercase tracking-wider" style={{ color: "#a78bfa" }}>{children}</h3>
 );
 
 const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
@@ -253,7 +253,7 @@ const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
   const assessmentItems = Object.entries(report?.image_assessment || {});
 
   return (
-    <div className="overflow-hidden rounded-2xl" style={{ background: "#f8fafc", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="overflow-hidden rounded-2xl" style={{ background: "linear-gradient(180deg, rgba(18,15,35,0.98), rgba(10,10,20,0.98))", border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="flex flex-wrap items-center justify-between gap-3 p-4" style={{ background: "#111827" }}>
         <div>
           <p className="text-xs font-bold tracking-widest" style={{ color: "#9fe4f4" }}>INKSIGHT</p>
@@ -272,40 +272,41 @@ const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
       {error && <p className="m-4 text-xs" style={{ color: "#b91c1c" }}>{error}</p>}
 
       <div className="flex flex-col gap-7 p-4 sm:p-7">
-        <section className="rounded-none p-8 text-center sm:p-14" style={{ background: "#1b3157", color: "#fff" }}>
+        {/* PDF-only cover intentionally omitted from the web report. */}
+        {/* <section className="rounded-none p-8 text-center sm:p-14" style={{ background: "#1b3157", color: "#fff" }}>
           <p className="text-base font-bold tracking-wide" style={{ color: "#9fe4f4" }}>INKSIGHT</p>
           <h1 className="mt-10 text-3xl font-bold leading-tight sm:text-5xl">PDA GRAPHOLOGY<br />ANALYSIS REPORT</h1>
           <p className="mt-4 text-sm">A personalized self-discovery report based on traditional graphology</p>
           <p className="mt-16 text-lg font-bold">Prepared for</p>
           <p className="text-lg">{preparedName}</p>
           <p className="mx-auto mt-16 max-w-xl text-sm leading-6">Discover your patterns. Understand your strengths. Choose your next step.</p>
-        </section>
+        </section> */}
         <p className="text-xs" style={{ color: "#6b7280" }}>Inksight · Your handwriting, interpreted as a mirror for reflection.</p>
 
         <ReportSection title="Handwriting Insight Report" subtitle={`Discover your patterns. Understand your strengths. Choose your next step. Schema ${report?.schema_version || "2.1"} · ${new Date().toLocaleDateString("en-GB")}${name ? ` · ${name}` : ""}`}>
           {sampleUrl && (
             <>
-              <img src={sampleUrl} alt="Submitted handwriting sample" className="mx-auto w-full rounded-lg object-contain" style={{ maxHeight: 520, background: "#f8fafc", border: "1px solid #dbeafe" }} />
+              <img src={sampleUrl} alt="Submitted handwriting sample" className="mx-auto w-full rounded-xl object-contain" style={{ maxHeight: 520, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(167,139,250,0.24)" }} />
               <ReportLabel>Visible Cues in This Image</ReportLabel>
-              <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #bae6fd" }}>
+              <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid rgba(103,232,249,0.2)" }}>
                 <table className="w-full text-left text-xs">
-                  <thead style={{ background: "#e0f2fe", color: "#075985" }}><tr><th className="p-3">Visible cue</th><th className="p-3">Observed value</th><th className="p-3">Evidence note</th></tr></thead>
-                  <tbody>{observations.filter((item) => item.assessability !== "not_assessable").slice(0, 6).map((item) => <tr key={item.feature_id} style={{ background: "#f8fafc", borderTop: "1px solid #dbeafe" }}><td className="p-3 font-semibold">{item.feature_name}</td><td className="p-3">{titleCase(item.observed_value)}</td><td className="p-3">{item.evidence?.description || "No evidence description was returned for this cue."}</td></tr>)}</tbody>
+                  <thead style={{ background: "rgba(14,116,144,0.28)", color: "#9fe4f4" }}><tr><th className="p-3">Visible cue</th><th className="p-3">Observed value</th><th className="p-3">Evidence note</th></tr></thead>
+                  <tbody>{observations.filter((item) => item.assessability !== "not_assessable").slice(0, 6).map((item) => <tr key={item.feature_id} style={{ background: "rgba(255,255,255,0.025)", color: "#d1c4df", borderTop: "1px solid rgba(103,232,249,0.12)" }}><td className="p-3 font-semibold">{item.feature_name}</td><td className="p-3">{titleCase(item.observed_value)}</td><td className="p-3">{item.evidence?.description || "No evidence description was returned for this cue."}</td></tr>)}</tbody>
                 </table>
               </div>
             </>
           )}
           <ReportLabel>Image Assessment</ReportLabel>
-          <div className="grid gap-2 sm:grid-cols-2">{assessmentItems.map(([key, value]) => <div key={key} className="rounded-lg p-3" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}><p className="text-xs font-bold" style={{ color: "#6b7280" }}>{titleCase(key)}</p><p className="mt-1 text-sm">{titleCase(value)}</p></div>)}</div>
+          <div className="grid gap-2 sm:grid-cols-2">{assessmentItems.map(([key, value]) => <div key={key} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}><p className="text-xs font-bold" style={{ color: "#8b82a6" }}>{titleCase(key)}</p><p className="mt-1 text-sm" style={{ color: "#e5e7eb" }}>{titleCase(value)}</p></div>)}</div>
           <ReportLabel>Report at a Glance</ReportLabel>
-          <div className="grid gap-2 sm:grid-cols-3">{[["70", "Features reviewed"], [String(assessableCount), "Visually assessable"], [summary?.method_confidence?.confidence || "low", "Overall coverage"]].map(([value, label]) => <div key={label} className="rounded-lg p-4 text-center" style={{ background: "#f3f0ff", border: "1px solid #c4b5fd" }}><p className="text-2xl font-bold" style={{ color: "#6d28d9" }}>{value}</p><p className="text-xs font-bold uppercase" style={{ color: "#1f1b2e" }}>{label}</p></div>)}</div>
+          <div className="grid gap-2 sm:grid-cols-3">{[["70", "Features reviewed"], [String(assessableCount), "Visually assessable"], [summary?.method_confidence?.confidence || "low", "Overall coverage"]].map(([value, label]) => <div key={label} className="rounded-lg p-4 text-center" style={{ background: "rgba(124,58,237,0.13)", border: "1px solid rgba(196,181,253,0.28)" }}><p className="text-2xl font-bold" style={{ color: "#c4b5fd" }}>{value}</p><p className="text-xs font-bold uppercase" style={{ color: "#d1c4df" }}>{label}</p></div>)}</div>
           <ReportText className="mt-5">This one-page overview is a concise starting point. The following pages explain the evidence, limitations, actions, and all 70 visual observations in detail.</ReportText>
         </ReportSection>
 
         <ReportSection title="Begin With Awareness" subtitle="A reflective report is most useful when it becomes a choice, not a label.">
           <div className="grid gap-3 sm:grid-cols-2">{[
             ["01 Observe", "Notice the visible pattern before assigning meaning."], ["02 Reflect", "Ask what feels familiar, useful, or incomplete."], ["03 Apply", "Turn one insight into a small experiment."], ["04 Choose", "Keep what helps and leave what does not fit."],
-          ].map(([title, text]) => <div key={title} className="rounded-lg p-4" style={{ background: "#f3f0ff" }}><p className="font-bold">{title}</p><p className="mt-1 text-sm leading-6">{text}</p></div>)}</div>
+          ].map(([title, text]) => <div key={title} className="rounded-lg p-4" style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(167,139,250,0.16)" }}><p className="font-bold" style={{ color: "#e5e7eb" }}>{title}</p><p className="mt-1 text-sm leading-6" style={{ color: "#c4b5d4" }}>{text}</p></div>)}</div>
           <ReportLabel>A Note on Interpretation</ReportLabel><ReportText>{"Graphology is a traditional interpretive practice, not scientifically validated. This report is for self-reflection and entertainment only, not diagnosis or financial, health, or relationship advice."}</ReportText>
           <ReportLabel>How to Read Your Report</ReportLabel><ReportText>Read the score beside the language and evidence. A low score is not a flaw; it is a possible area for curiosity, practice, or a different context.</ReportText>
         </ReportSection>
@@ -319,21 +320,21 @@ const ReportCard = ({ report, sampleUrl = null, name = "" }) => {
 
         {profile && <>
           <ReportSection title="Profile Snapshot" subtitle="Seven dimensions, one overall quotient, and two useful anchors.">
-            <div className="grid gap-3">{dimensions.map((dimension) => <div key={dimension.key}><div className="flex justify-between text-sm font-semibold"><span>{dimension.label}</span><span>{dimension.score}/100</span></div><div className="mt-2 h-2 rounded-full" style={{ background: "#ede9fe" }}><div className="h-full rounded-full" style={{ width: `${dimension.score}%`, background: "#6d28d9" }} /></div></div>)}</div>
-            <div className="mt-6 rounded-lg p-4 text-center" style={{ background: "#f3f0ff" }}><p className="text-3xl font-bold" style={{ color: "#6d28d9" }}>{profile.overall_score}/100</p><p className="text-xs font-bold uppercase">Overall Quotient</p></div>
+            <div className="grid gap-3">{dimensions.map((dimension) => <div key={dimension.key}><div className="flex justify-between text-sm font-semibold"><span>{dimension.label}</span><span>{dimension.score}/100</span></div><div className="mt-2 h-2 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}><div className="h-full rounded-full" style={{ width: `${dimension.score}%`, background: "linear-gradient(90deg, #7c3aed, #a78bfa)" }} /></div></div>)}</div>
+            <div className="mt-6 rounded-lg p-4 text-center" style={{ background: "rgba(124,58,237,0.14)", border: "1px solid rgba(196,181,253,0.24)" }}><p className="text-3xl font-bold" style={{ color: "#c4b5fd" }}>{profile.overall_score}/100</p><p className="text-xs font-bold uppercase" style={{ color: "#d1c4df" }}>Overall Quotient</p></div>
             <ReportText className="mt-4">Strongest focus: {profile.strongest_focus} · Growth focus: {profile.growth_focus}</ReportText>
             <ReportText className="mt-4">The quotient is the rounded mean of the seven dimension scores. The bars show relative emphasis in this sample; they are not grades, diagnoses, or fixed personality limits.</ReportText>
           </ReportSection>
 
           <ReportSection title="Personality Dashboard" subtitle={profile.one_line_profile}>
             <ReportText><b>{profile.archetype}</b><br />{profile.archetype_tagline}</ReportText>
-            <ReportLabel>Trait Signals</ReportLabel><div className="flex flex-wrap gap-2">{dimensions.slice(0, 12).map((d) => <span key={d.key} className="rounded-full px-3 py-1 text-xs" style={{ background: "#f3f0ff", color: "#6d28d9" }}>{d.label}</span>)}</div>
+            <ReportLabel>Trait Signals</ReportLabel><div className="flex flex-wrap gap-2">{dimensions.slice(0, 12).map((d) => <span key={d.key} className="rounded-full px-3 py-1 text-xs" style={{ background: "rgba(124,58,237,0.16)", color: "#c4b5fd", border: "1px solid rgba(167,139,250,0.2)" }}>{d.label}</span>)}</div>
             <ReportText className="mt-5">Your profile is a conversation starter: it may describe tendencies in this sample, not the limits of who you are.</ReportText>
             <ReportText className="mt-4">Read the dashboard as a landscape rather than a leaderboard. Stronger dimensions may show where a familiar response is already available to you; the growth focus may show where a smaller, more deliberate experiment could add flexibility.</ReportText>
           </ReportSection>
 
           <ReportSection title="Know Your X-Factor" subtitle="Three high-scoring signals that may be useful when you choose your next step.">
-            {dimensions.slice(0, 3).map((d) => <div key={d.key} className="mb-4 rounded-lg p-4" style={{ background: "#faf9ff", border: "1px solid #e5e7eb" }}><ReportText><b>{d.label} · {d.score}/100</b></ReportText><ReportText className="mt-2">What your profile suggests: {d.essence}<br />Make it useful: {d.next_move}</ReportText></div>)}
+            {dimensions.slice(0, 3).map((d) => <div key={d.key} className="mb-4 rounded-lg p-4" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}><ReportText><b>{d.label} · {d.score}/100</b></ReportText><ReportText className="mt-2">What your profile suggests: {d.essence}<br />Make it useful: {d.next_move}</ReportText></div>)}
           </ReportSection>
 
           {dimensions.map((dimension) => <ReportSection key={dimension.key} title={dimension.label} subtitle={`${dimension.score}/100 · ${dimension.core_style}`}>
