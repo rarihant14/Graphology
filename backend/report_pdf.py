@@ -365,15 +365,17 @@ def _append_profile_pages(story, profile, summary, name: str):
         story.append(Paragraph(f"<b>{_escape(d.label)} · {d.score}/100</b>", _STYLES["category"]))
         story.append(Paragraph(f"What your profile suggests: {_escape(d.essence)}<br/>Make it useful: {_escape(d.next_move)}", _STYLES["body"]))
 
-    # Six main dimension pages, ordered by score, with Personal Growth reserved for the appendix.
+    # Seven main dimension pages, ordered by score.
     for d in profile.dimensions:
-        if d.key == "personal_growth":
-            continue
         story.append(PageBreak())
         _page_title(story, d.label, f"{d.score}/100 · {_escape(d.core_style)}")
         story.append(_dimension_table(d))
         story.append(Spacer(1, 7))
         story.append(_dimension_context(d))
+        story.append(Paragraph("NEXT MOVE", _STYLES["category"]))
+        story.append(Paragraph(_escape(d.next_move), _STYLES["body"]))
+        story.append(Paragraph("REFLECTION", _STYLES["category"]))
+        story.append(Paragraph("Which part of this interpretation matches your lived experience, and which part does not?", _STYLES["body"]))
         story.append(Paragraph("HOW WE REACHED THIS INSIGHT", _STYLES["category"]))
         story.append(Paragraph(_escape(d.cue_note), _STYLES["small"]))
         story.append(Paragraph("A practical reading: this dimension describes a possible pattern in how you approach situations. Context, mood, writing conditions, and deliberate writing style can all influence what is visible.", _STYLES["small"]))
@@ -410,16 +412,6 @@ def _append_profile_pages(story, profile, summary, name: str):
     story.append(PageBreak())
     _page_title(story, "Your Personal Insight Layer", "Score + interpretation + evidence + action")
     story.append(Paragraph(_DISCLAIMER, _STYLES["body"]))
-    for d in profile.dimensions:
-        story.append(PageBreak())
-        _page_title(story, d.label, f"Personal insight · {d.score}/100")
-        story.append(_dimension_table(d, appendix=True))
-        story.append(Paragraph("WHY WE SEE IT", _STYLES["category"]))
-        for index, cue in enumerate((d.evidence or ["No strong cue was available."])[:4], 1):
-            story.append(Paragraph(f"<b>Evidence {index}</b> · {_escape(cue)}", _STYLES["small"]))
-        story.append(Paragraph("ORIGINAL REPORT CUES", _STYLES["category"]))
-        story.append(Paragraph(_escape(d.cue_note), _STYLES["small"]))
-        story.append(Paragraph("The original observation record remains the source for every score and interpretation.", _STYLES["small"]))
 
     story.append(PageBreak())
     _page_title(story, "Top 5 Strengths", "Ranked signals to practice, not labels to perform.")
@@ -443,13 +435,6 @@ def _append_profile_pages(story, profile, summary, name: str):
     story.append(Paragraph("DAY 30 REVIEW", _STYLES["category"]))
     story.append(Paragraph("What became easier? What still needs a smaller experiment? What will you carry into the next month?", _STYLES["body"]))
     story.append(Paragraph("30-DAY PRINCIPLE: consistent and small is more informative than intense and temporary.", _STYLES["body"]))
-
-    story.append(PageBreak())
-    _page_title(story, "Share Card", "A compact version of the reflection to save or share.")
-    story.append(Paragraph(f"<b>{_escape(name or 'Your Inksight Profile')}</b><br/>{_escape(profile.archetype)}<br/>{_escape(profile.one_line_profile)}", _STYLES["body"]))
-    story.append(Paragraph(" · ".join(f"{_escape(d.label)} {d.score}/100" for d in profile.dimensions[:3]), _STYLES["body"]))
-    story.append(Paragraph("Suggested caption: A reflective snapshot of the patterns in my handwriting, with one next step to try.", _STYLES["body"]))
-    story.append(Paragraph("CTA: See your patterns. Understand your tendencies. Choose your next move.", _STYLES["body"]))
 
     story.append(PageBreak())
     _page_title(story, "Method + Confidence", "What was observed, how it was interpreted, and where the limits are.")
