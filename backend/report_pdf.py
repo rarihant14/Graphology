@@ -200,12 +200,9 @@ def _dimension_table(dimension, appendix: bool = False):
         [Paragraph("Growth shift", _STYLES["small"]), Paragraph(_escape(dimension.growth_shift), _STYLES["body"])],
         [Paragraph("Core style", _STYLES["small"]), Paragraph(_escape(dimension.core_style), _STYLES["body"])],
         [Paragraph("Mindful action", _STYLES["small"]), Paragraph(_escape(dimension.mindful_action), _STYLES["body"])],
+        [Paragraph("Reflection", _STYLES["small"]), Paragraph("Which part of this interpretation matches your lived experience, and which part does not?", _STYLES["body"])],
+        [Paragraph("Next move", _STYLES["small"]), Paragraph(_escape(dimension.next_move), _STYLES["body"])],
     ]
-    if appendix:
-        rows.extend([
-            [Paragraph("Next move", _STYLES["small"]), Paragraph(_escape(dimension.next_move), _STYLES["body"])],
-            [Paragraph("Reflection", _STYLES["small"]), Paragraph("Which part of this interpretation matches your lived experience, and which part does not?", _STYLES["body"])],
-        ])
     table = Table(rows, colWidths=[_CONTENT_WIDTH * 0.27, _CONTENT_WIDTH * 0.73])
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f3f0ff")),
@@ -372,10 +369,6 @@ def _append_profile_pages(story, profile, summary, name: str):
         story.append(_dimension_table(d))
         story.append(Spacer(1, 7))
         story.append(_dimension_context(d))
-        story.append(Paragraph("NEXT MOVE", _STYLES["category"]))
-        story.append(Paragraph(_escape(d.next_move), _STYLES["body"]))
-        story.append(Paragraph("REFLECTION", _STYLES["category"]))
-        story.append(Paragraph("Which part of this interpretation matches your lived experience, and which part does not?", _STYLES["body"]))
         story.append(Paragraph("HOW WE REACHED THIS INSIGHT", _STYLES["category"]))
         story.append(Paragraph(_escape(d.cue_note), _STYLES["small"]))
         story.append(Paragraph("A practical reading: this dimension describes a possible pattern in how you approach situations. Context, mood, writing conditions, and deliberate writing style can all influence what is visible.", _STYLES["small"]))
